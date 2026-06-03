@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plume — AI-Powered Aesthetic Intelligence</title>
+  <meta name="description" content="The first platform connecting aesthetic clinics, beauty brands, and beauty lovers — commission-free, powered by AI." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS
+    ============================================================ */
+    :root {
+      /* Canvas */
+      --canvas:          #F7F4FB;
+      --surface:         #FFFFFF;
+      --surface-subtle:  #FAF8FE;
+
+      /* Plume Aura Sweep — crimson → pink → peach → gold → cyan */
+      --plume-crimson: #DC143C;
+      --plume-pink:    #E8548A;
+      --plume-peach:   #F4A37A;
+      --plume-gold:    #F0C060;
+      --plume-cyan:    #5CC8D7;
+
+      /* Brand Violet */
+      --plume-violet:       #7C3AED;
+      --plume-violet-deep:  #6D28D9;
+      --plume-violet-light: #EDE9FE;
+      --plume-violet-glow:  rgba(124, 58, 237, 0.18);
+
+      /* Text */
+      --text-primary:   #1A1625;
+      --text-secondary: #5A5270;
+      --text-muted:     #9B94B0;
+      --text-inverse:   #FFFFFF;
+
+      /* Gradient shorthands */
+      --aura-sweep:  linear-gradient(135deg, #DC143C 0%, #E8548A 25%, #F4A37A 50%, #F0C060 75%, #5CC8D7 100%);
+      --aura-radial: radial-gradient(ellipse at center, #E8548A 0%, #F4A37A 35%, #F0C060 65%, #5CC8D7 100%);
+      --violet-grad: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+      --cyan-peach:  linear-gradient(90deg, #5CC8D7 0%, #F4A37A 100%);
+
+      /* Borders & Radii */
+      --border-subtle: rgba(155, 148, 176, 0.15);
+      --radius-sm:  12px;
+      --radius-md:  16px;
+      --radius-lg:  24px;
+      --radius-xl:  32px;
+      --radius-pill: 100px;
+
+      /* Shadows */
+      --shadow-xs: 0 2px 12px rgba(124, 58, 237, 0.05);
+      --shadow-sm: 0 2px 20px rgba(124, 58, 237, 0.07);
+      --shadow-md: 0 4px 40px rgba(124, 58, 237, 0.09);
+      --shadow-lg: 0 8px 60px rgba(124, 58, 237, 0.13);
+      --shadow-card-hover: 0 12px 64px rgba(124, 58, 237, 0.14), 0 0 80px rgba(232, 84, 138, 0.12);
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --dur-fast:   0.25s;
+      --dur-base:   0.4s;
+      --dur-slow:   0.7s;
+    }
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--text-primary);
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Film-grain noise overlay — ~4% opacity, mix-blend overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 400px 400px;
+      opacity: 0.038;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: overlay;
+    }
+
+    /* ============================================================
+       TYPE HELPERS
+    ============================================================ */
+    .display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .mono    { font-family: 'IBM Plex Mono', 'Courier New', monospace; }
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: inline-block;
+    }
+
+    .gradient-text {
+      background: var(--aura-sweep);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+    .container {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(20px, 5vw, 80px);
+    }
+
+    /* ============================================================
+       AURA BLOOM — reusable decorative gradient spot
+    ============================================================ */
+    .bloom {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    /* ============================================================
+       SCROLL-REVEAL ANIMATION
+    ============================================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity var(--dur-slow) var(--ease-out),
+                  transform var(--dur-slow) var(--ease-out);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 30px;
+      border-radius: var(--radius-pill);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: transform var(--dur-base) var(--ease-spring),
+                  box-shadow var(--dur-base) var(--ease-out),
+                  background var(--dur-fast) ease,
+                  border-color var(--dur-fast) ease;
+    }
+
+    .btn-primary {
+      background: var(--plume-violet);
+      color: var(--text-inverse);
+      box-shadow: 0 4px 24px rgba(124, 58, 237, 0.32);
+    }
+
+    .btn-primary:hover {
+      background: var(--plume-violet-deep);
+      box-shadow: 0 8px 36px rgba(124, 58, 237, 0.44);
+      transform: translateY(-3px);
+    }
+
+    .btn-primary:active { transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1.5px solid rgba(90, 82, 112, 0.28);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--plume-violet);
+      color: var(--plume-violet);
+      background: var(--plume-violet-light);
+      transform: translateY(-3px);
+    }
+
+    .btn-ghost:active { transform: translateY(-1px); }
+
+    /* ============================================================
+       NAVIGATION
+    ============================================================ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      padding: 22px 0;
+      transition: background var(--dur-base),
+                  backdrop-filter var(--dur-base),
+                  box-shadow var(--dur-base),
+                  padding var(--dur-base);
+    }
+
+    .nav.scrolled {
+      padding: 14px 0;
+      background: rgba(247, 244, 251, 0.88);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      box-shadow: 0 1px 0 var(--border-subtle), 0 4px 24px rgba(124, 58, 237, 0.05);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    /* Logo */
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 34px; height: 34px;
+      flex-shrink: 0;
+    }
+
+    .logo-wordmark {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.3125rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.875rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--dur-fast);
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    /* Hamburger (mobile) */
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 4px;
+    }
+
+    .nav-cta { padding: 11px 22px; font-size: 0.875rem; }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 160px 0 120px;
+      overflow: hidden;
+    }
+
+    /* Aura blooms */
+    .hero .bloom-1 {
+      width: 1000px; height: 1000px;
+      top: -280px; left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(232, 84, 138, 0.22) 0%, rgba(244, 163, 122, 0.14) 40%, transparent 68%);
+      animation: breathe 14s ease-in-out infinite;
+    }
+
+    .hero .bloom-2 {
+      width: 640px; height: 640px;
+      bottom: -60px; right: -120px;
+      background: radial-gradient(ellipse, rgba(92, 200, 215, 0.18) 0%, rgba(240, 192, 96, 0.1) 45%, transparent 68%);
+      opacity: 1;
+      animation: breathe 18s ease-in-out infinite 4s;
+    }
+
+    .hero .bloom-3 {
+      width: 500px; height: 500px;
+      bottom: 80px; left: -100px;
+      background: radial-gradient(ellipse, rgba(220, 20, 60, 0.12) 0%, rgba(232, 84, 138, 0.06) 45%, transparent 68%);
+      animation: breathe 20s ease-in-out infinite 7s;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.9; }
+      33%       { transform: scale(1.06) translate(10px, -12px); opacity: 1; }
+      66%       { transform: scale(0.97) translate(-8px, 8px); opacity: 0.85; }
+    }
+
+    .hero .bloom-1 { animation: heroBloom1 14s ease-in-out infinite; }
+
+    @keyframes heroBloom1 {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.9; }
+      50%       { transform: translateX(-50%) scale(1.05); opacity: 1; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 820px;
+    }
+
+    /* Eyebrow with decorative lines */
+    .hero-eyebrow-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .hero-eyebrow-wrap .line {
+      display: block;
+      width: 44px; height: 1px;
+      background: var(--aura-sweep);
+      opacity: 0.55;
+      border-radius: 1px;
+    }
+
+    /* Hero headline */
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(3rem, 7.5vw, 5.75rem);
+      font-weight: 300;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin-bottom: 28px;
+    }
+
+    .hero-h1 em {
+      font-style: italic;
+      font-weight: 300;
+      background: var(--aura-sweep);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: clamp(1.0625rem, 2.2vw, 1.1875rem);
+      font-weight: 300;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto 52px;
+      line-height: 1.7;
+    }
+
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 44px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      color: var(--text-muted);
+      opacity: 0.7;
+      animation: scrollHint 2.4s ease-in-out infinite;
+    }
+
+    .scroll-hint .eyebrow { font-size: 0.5625rem; letter-spacing: 0.2em; }
+
+    @keyframes scrollHint {
+      0%, 100% { opacity: 0.45; transform: translateX(-50%) translateY(0); }
+      55%       { opacity: 0.8;  transform: translateX(-50%) translateY(7px); }
+    }
+
+    /* ============================================================
+       SECTION SHARED STYLES
+    ============================================================ */
+    .section-header {
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto clamp(56px, 8vw, 88px);
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2rem, 4.5vw, 3.375rem);
+      font-weight: 300;
+      line-height: 1.18;
+      letter-spacing: 0.01em;
+      color: var(--text-primary);
+      margin-top: 14px;
+    }
+
+    .section-sub {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      margin-top: 16px;
+      line-height: 1.7;
+    }
+
+    /* ============================================================
+       PILLARS
+    ============================================================ */
+    .pillars {
+      padding: clamp(80px, 11vw, 148px) 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+    }
+
+    /* Card */
+    .pillar-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: clamp(28px, 4vw, 44px) clamp(24px, 3vw, 36px);
+      box-shadow: var(--shadow-md);
+      border: 1px solid transparent;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+      transition:
+        transform  var(--dur-base) var(--ease-spring),
+        box-shadow var(--dur-base) var(--ease-out),
+        border-color var(--dur-base);
+    }
+
+    /* Aura glow that blooms on hover */
+    .pillar-card::after {
+      content: '';
+      position: absolute;
+      inset: -60%;
+      background: var(--aura-radial);
+      opacity: 0;
+      filter: blur(70px);
+      border-radius: 50%;
+      pointer-events: none;
+      transition: opacity 0.55s var(--ease-out);
+    }
+
+    .pillar-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: rgba(232, 84, 138, 0.08);
+    }
+
+    .pillar-card:hover::after { opacity: 0.13; }
+
+    /* Icon */
+    .pillar-icon {
+      width: 48px; height: 48px;
+      margin-bottom: 26px;
+      position: relative; z-index: 1;
+    }
+
+    .pillar-eyebrow-label {
+      margin-bottom: 10px;
+      position: relative; z-index: 1;
+    }
+
+    .pillar-name {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.625rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      position: relative; z-index: 1;
+    }
+
+    .pillar-desc {
+      font-size: 0.9375rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      position: relative; z-index: 1;
+    }
+
+    .pillar-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 28px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--plume-violet);
+      text-decoration: none;
+      position: relative; z-index: 1;
+      transition: gap var(--dur-fast) var(--ease-out), opacity var(--dur-fast);
+    }
+
+    .pillar-link:hover { gap: 12px; opacity: 0.85; }
+
+    /* ============================================================
+       POSITIONING BAND
+    ============================================================ */
+    .positioning {
+      padding: clamp(80px, 11vw, 148px) 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Large centred bloom */
+    .positioning .bloom-center {
+      width: 1100px; height: 700px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(
+        ellipse at center,
+        rgba(92, 200, 215, 0.13) 0%,
+        rgba(244, 163, 122, 0.09) 45%,
+        transparent 70%
+      );
+      filter: blur(70px);
+    }
+
+    .positioning-inner {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    /* Cyan-to-peach accent bar */
+    .accent-bar {
+      display: block;
+      width: 72px; height: 3px;
+      background: var(--cyan-peach);
+      border-radius: 2px;
+      margin: 0 auto 36px;
+    }
+
+    .positioning-statement {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+      font-weight: 300;
+      line-height: 1.48;
+      letter-spacing: 0.01em;
+      color: var(--text-primary);
+    }
+
+    .positioning-statement strong {
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    /* Stats row */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: clamp(32px, 7vw, 96px);
+      margin-top: 72px;
+      flex-wrap: wrap;
+    }
+
+    .stat-num {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2.75rem, 5.5vw, 4rem);
+      font-weight: 300;
+      line-height: 1;
+      background: var(--aura-sweep);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.625rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    /* ============================================================
+       HOW IT WORKS
+    ============================================================ */
+    .how {
+      padding: clamp(80px, 11vw, 148px) 0;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle background bloom */
+    .how .bloom-bg {
+      width: 900px; height: 600px;
+      bottom: -200px; right: -200px;
+      background: radial-gradient(ellipse, rgba(240, 192, 96, 0.09) 0%, rgba(92, 200, 215, 0.06) 45%, transparent 68%);
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-top: 0;
+    }
+
+    .how-item {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative; z-index: 1;
+    }
+
+    .how-step-num {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--aura-sweep);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.375rem;
+      font-weight: 400;
+      color: var(--text-inverse);
+      flex-shrink: 0;
+    }
+
+    .how-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.625rem;
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--text-primary);
+    }
+
+    .how-desc {
+      font-size: 0.9375rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ============================================================
+       CTA BAND
+    ============================================================ */
+    .cta-band {
+      padding: clamp(80px, 11vw, 140px) 0;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .cta-band .bloom-left {
+      width: 700px; height: 700px;
+      top: 50%; left: -200px;
+      transform: translateY(-50%);
+      background: radial-gradient(ellipse, rgba(220, 20, 60, 0.1) 0%, rgba(232, 84, 138, 0.07) 40%, transparent 68%);
+    }
+
+    .cta-band .bloom-right {
+      width: 700px; height: 700px;
+      top: 50%; right: -200px;
+      transform: translateY(-50%);
+      background: radial-gradient(ellipse, rgba(92, 200, 215, 0.1) 0%, rgba(240, 192, 96, 0.07) 40%, transparent 68%);
+    }
+
+    .cta-band-inner {
+      position: relative; z-index: 2;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .cta-band-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2rem, 4.5vw, 3.25rem);
+      font-weight: 300;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .cta-band-sub {
+      font-size: 1.0625rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      margin-bottom: 44px;
+      line-height: 1.7;
+    }
+
+    .cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .footer {
+      padding: clamp(64px, 8vw, 108px) 0 44px;
+      position: relative;
+    }
+
+    /* Aura hairline at the very top */
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 6%; right: 6%;
+      height: 1px;
+      background: var(--aura-sweep);
+      opacity: 0.35;
+      border-radius: 1px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1fr 1fr;
+      gap: 48px 40px;
+      margin-bottom: 72px;
+    }
+
+    .footer-brand-tagline {
+      font-size: 0.9375rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      max-width: 260px;
+      margin-top: 18px;
+    }
+
+    .footer-col h4 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.625rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .footer-col a {
+      font-size: 0.9375rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--dur-fast);
+    }
+
+    .footer-col a:hover { color: var(--text-primary); }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 28px;
+      border-top: 1px solid var(--border-subtle);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-copy {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 12px;
+    }
+
+    .social-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.05);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
+    }
+
+    .social-btn:hover {
+      background: var(--plume-violet-light);
+      color: var(--plume-violet);
+      transform: translateY(-3px);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 1100px) {
+      .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-menu-btn { display: flex; }
+      .how-grid { grid-template-columns: 1fr; gap: 44px; }
+    }
+
+    @media (max-width: 580px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .stats { gap: 32px; }
+    }
+
+    /* Mobile nav overlay */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(247, 244, 251, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 490;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+
+    .mobile-nav.open { display: flex; }
+
+    .mobile-nav a {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .mobile-nav-close {
+      position: absolute;
+      top: 24px; right: 24px;
+      background: none; border: none;
+      cursor: pointer; color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================================
+       NAVIGATION
+  ================================================================ -->
+  <header class="nav" id="nav" role="banner">
+    <div class="container">
+      <div class="nav-inner">
+
+        <a href="/" class="logo" aria-label="Plume home">
+          <!-- P monogram with aura gradient fill -->
+          <svg class="logo-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="lg-p" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                <stop offset="0%"   stop-color="#DC143C"/>
+                <stop offset="28%"  stop-color="#E8548A"/>
+                <stop offset="55%"  stop-color="#F4A37A"/>
+                <stop offset="78%"  stop-color="#F0C060"/>
+                <stop offset="100%" stop-color="#5CC8D7"/>
+              </linearGradient>
+            </defs>
+            <rect width="34" height="34" rx="9" fill="url(#lg-p)"/>
+            <!-- Stylised P letterform -->
+            <path d="M11 8.5h7.5a5 5 0 010 10H11V8.5z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11 18.5V26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="logo-wordmark">PLUME</span>
+        </a>
+
+        <nav aria-label="Primary">
+          <ul class="nav-links">
+            <li><a href="#pillars">Platform</a></li>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#positioning">About</a></li>
+          </ul>
+        </nav>
+
+        <a href="#early-access" class="btn btn-primary nav-cta">Get early access</a>
+
+        <button class="nav-menu-btn" id="menuBtn" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile nav overlay -->
+  <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Navigation">
+    <button class="mobile-nav-close" id="menuClose" aria-label="Close menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <a href="#pillars"     onclick="closeMobileNav()">Platform</a>
+    <a href="#how"         onclick="closeMobileNav()">How it works</a>
+    <a href="#positioning" onclick="closeMobileNav()">About</a>
+    <a href="#early-access" class="btn btn-primary" onclick="closeMobileNav()">Get early access</a>
+  </div>
+
+
+  <!-- ================================================================
+       HERO
+  ================================================================ -->
+  <section class="hero" id="hero" aria-labelledby="hero-heading">
+
+    <div class="bloom bloom-1"></div>
+    <div class="bloom bloom-2"></div>
+    <div class="bloom bloom-3"></div>
+
+    <div class="container">
+      <div class="hero-content">
+
+        <div class="hero-eyebrow-wrap reveal">
+          <span class="line" aria-hidden="true"></span>
+          <span class="eyebrow">AI-Powered Aesthetic Intelligence</span>
+          <span class="line" aria-hidden="true"></span>
+        </div>
+
+        <h1 class="hero-h1 reveal d1" id="hero-heading">
+          Beauty, Commerce &amp;<br>
+          <em>Intelligence — United.</em>
+        </h1>
+
+        <p class="hero-sub reveal d2">
+          The first platform connecting aesthetic clinics, beauty brands, and beauty lovers —
+          commission-free, powered by living AI.
+        </p>
+
+        <div class="hero-ctas reveal d3">
+          <a href="#early-access" class="btn btn-primary">
+            Join Plume
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2.5 7h9M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#pillars" class="btn btn-ghost">Explore the platform</a>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true">
+      <span class="eyebrow">Scroll</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+  </section>
+
+
+  <!-- ================================================================
+       PILLARS — Four Platform Pillars
+  ================================================================ -->
+  <section class="pillars" id="pillars" aria-labelledby="pillars-heading">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <span class="eyebrow">The Platform</span>
+        <h2 class="section-title" id="pillars-heading">
+          One ecosystem.<br>Four powerful pillars.
+        </h2>
+        <p class="section-sub">Every layer of aesthetic beauty, thoughtfully connected.</p>
+      </div>
+
+      <div class="pillars-grid">
+
+        <!-- Plume Clinic -->
+        <article class="pillar-card reveal d1">
+          <div class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ic-clinic" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#DC143C"/>
+                  <stop offset="100%" stop-color="#E8548A"/>
+                </linearGradient>
+              </defs>
+              <rect x="6" y="6" width="36" height="36" rx="10" fill="url(#ic-clinic)" opacity="0.1"/>
+              <path d="M24 13v22M13 24h22" stroke="url(#ic-clinic)" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="eyebrow pillar-eyebrow-label">Plume Clinic</span>
+          <h3 class="pillar-name">For Aesthetic Clinics</h3>
+          <p class="pillar-desc">Intelligent client management, AI-driven treatment protocols, and a living skin biography that deepens with every visit.</p>
+          <a href="#" class="pillar-link">
+            Learn more
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7h10M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+
+        <!-- Plume Beauty -->
+        <article class="pillar-card reveal d2">
+          <div class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ic-beauty" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#E8548A"/>
+                  <stop offset="100%" stop-color="#F4A37A"/>
+                </linearGradient>
+              </defs>
+              <rect x="6" y="6" width="36" height="36" rx="10" fill="url(#ic-beauty)" opacity="0.1"/>
+              <circle cx="24" cy="24" r="9" stroke="url(#ic-beauty)" stroke-width="2.5"/>
+              <circle cx="24" cy="24" r="3.5" fill="url(#ic-beauty)" opacity="0.7"/>
+              <path d="M24 11v4M24 33v4M11 24h4M33 24h4" stroke="url(#ic-beauty)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="eyebrow pillar-eyebrow-label">Plume Beauty</span>
+          <h3 class="pillar-name">For Beauty Brands</h3>
+          <p class="pillar-desc">Reach verified beauty lovers and clinic clients with zero commission. Authentic discovery, direct and frictionless commerce.</p>
+          <a href="#" class="pillar-link">
+            Learn more
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7h10M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+
+        <!-- Plume Lab -->
+        <article class="pillar-card reveal d3">
+          <div class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ic-lab" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#F4A37A"/>
+                  <stop offset="100%" stop-color="#F0C060"/>
+                </linearGradient>
+              </defs>
+              <rect x="6" y="6" width="36" height="36" rx="10" fill="url(#ic-lab)" opacity="0.1"/>
+              <path d="M19 11h10M21 11v13l-8 14h18l-8-14V11" stroke="url(#ic-lab)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="26" cy="30" r="2" fill="url(#ic-lab)" opacity="0.8"/>
+            </svg>
+          </div>
+          <span class="eyebrow pillar-eyebrow-label">Plume Lab</span>
+          <h3 class="pillar-name">Skin Intelligence</h3>
+          <p class="pillar-desc">A living skin biography, longitudinal AI analysis, and outcome data that grows smarter with every treatment recorded.</p>
+          <a href="#" class="pillar-link">
+            Learn more
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7h10M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+
+        <!-- Plume Loyalty -->
+        <article class="pillar-card reveal d4">
+          <div class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ic-loyalty" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#F0C060"/>
+                  <stop offset="100%" stop-color="#5CC8D7"/>
+                </linearGradient>
+              </defs>
+              <rect x="6" y="6" width="36" height="36" rx="10" fill="url(#ic-loyalty)" opacity="0.1"/>
+              <path d="M24 35S11 27 11 19a8 8 0 0113-6.25A8 8 0 0137 19c0 8-13 16-13 16z" stroke="url(#ic-loyalty)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="eyebrow pillar-eyebrow-label">Plume Loyalty</span>
+          <h3 class="pillar-name">For Beauty Lovers</h3>
+          <p class="pillar-desc">A curated discovery feed, personalised rewards, and a community built around your unique skin journey.</p>
+          <a href="#" class="pillar-link">
+            Learn more
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7h10M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       POSITIONING BAND — Core Value Statement
+  ================================================================ -->
+  <section class="positioning" id="positioning" aria-labelledby="positioning-heading">
+
+    <div class="bloom bloom-center"></div>
+
+    <div class="container">
+      <div class="positioning-inner">
+
+        <span class="accent-bar reveal" aria-hidden="true"></span>
+
+        <p class="positioning-statement reveal d1" id="positioning-heading">
+          Plume is a platform that connects <strong>aesthetic clinics</strong>,
+          beauty brands, and beauty lovers commission-free —
+          <strong>powered by AI</strong>,&nbsp;without fees or friction.
+        </p>
+
+        <div class="stats">
+          <div class="reveal d1" style="text-align:center">
+            <div class="stat-num">0%</div>
+            <div class="stat-label">Commission taken</div>
+          </div>
+          <div class="reveal d2" style="text-align:center">
+            <div class="stat-num">3</div>
+            <div class="stat-label">Ecosystems united</div>
+          </div>
+          <div class="reveal d3" style="text-align:center">
+            <div class="stat-num">∞</div>
+            <div class="stat-label">Intelligence loops</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       HOW IT WORKS
+  ================================================================ -->
+  <section class="how" id="how" aria-labelledby="how-heading">
+    <div class="bloom bloom-bg"></div>
+    <div class="container">
+
+      <div class="section-header reveal">
+        <span class="eyebrow">How it works</span>
+        <h2 class="section-title" id="how-heading">Intelligent by&nbsp;design.</h2>
+        <p class="section-sub">Three steps. Zero friction. Compounding value over time.</p>
+      </div>
+
+      <div class="how-grid">
+
+        <div class="how-item reveal d1">
+          <div class="how-step-num" aria-hidden="true">1</div>
+          <h3 class="how-title">Connect your clinic or brand</h3>
+          <p class="how-desc">Onboard in minutes. Plume sits alongside your existing workflow — enhancing without disrupting what already works.</p>
+        </div>
+
+        <div class="how-item reveal d2">
+          <div class="how-step-num" aria-hidden="true">2</div>
+          <h3 class="how-title">Let AI learn and recommend</h3>
+          <p class="how-desc">Our Skin Intelligence engine builds a living profile for every client — refining treatment and product recommendations as data accumulates.</p>
+        </div>
+
+        <div class="how-item reveal d3">
+          <div class="how-step-num" aria-hidden="true">3</div>
+          <h3 class="how-title">Grow without limits</h3>
+          <p class="how-desc">No commission. No gatekeeping. Genuine connections between clinics, brands, and the people who love beauty — forever.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       CTA BAND — Early Access
+  ================================================================ -->
+  <section class="cta-band" id="early-access" aria-labelledby="cta-heading">
+    <div class="bloom bloom-left"></div>
+    <div class="bloom bloom-right"></div>
+
+    <div class="container">
+      <div class="cta-band-inner">
+        <span class="eyebrow reveal">Early Access</span>
+        <h2 class="cta-band-title reveal d1" id="cta-heading">
+          Be the first to experience<br>
+          <em style="font-family:'Cormorant Garamond',serif; font-style:italic; background:var(--aura-sweep); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Plume.</em>
+        </h2>
+        <p class="cta-band-sub reveal d2">
+          Join the waitlist for clinics, brands, and beauty lovers ready to be part of something new.
+        </p>
+        <div class="cta-group reveal d3">
+          <a href="#" class="btn btn-primary">
+            Request early access
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2.5 7h9M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#pillars" class="btn btn-ghost">Learn more</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================================================================
+       FOOTER
+  ================================================================ -->
+  <footer class="footer" aria-label="Site footer">
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <div class="footer-brand">
+          <a href="/" class="logo" aria-label="Plume home">
+            <svg class="logo-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <defs>
+                <linearGradient id="lg-p-footer" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#DC143C"/>
+                  <stop offset="28%"  stop-color="#E8548A"/>
+                  <stop offset="55%"  stop-color="#F4A37A"/>
+                  <stop offset="78%"  stop-color="#F0C060"/>
+                  <stop offset="100%" stop-color="#5CC8D7"/>
+                </linearGradient>
+              </defs>
+              <rect width="34" height="34" rx="9" fill="url(#lg-p-footer)"/>
+              <path d="M11 8.5h7.5a5 5 0 010 10H11V8.5z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M11 18.5V26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="logo-wordmark">PLUME</span>
+          </a>
+          <p class="footer-brand-tagline">
+            AI-powered aesthetic intelligence — connecting the beauty ecosystem commission-free.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#">Plume Clinic</a></li>
+            <li><a href="#">Plume Beauty</a></li>
+            <li><a href="#">Plume Lab</a></li>
+            <li><a href="#">Plume Loyalty</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Cookies</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">© 2026 Plume Studios. All rights reserved.</p>
+        <div class="footer-socials" aria-label="Social media links">
+
+          <!-- Instagram -->
+          <a href="#" class="social-btn" aria-label="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <circle cx="12" cy="12" r="5"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="#" class="social-btn" aria-label="LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/>
+              <rect x="2" y="9" width="4" height="12"/>
+              <circle cx="4" cy="4" r="2"/>
+            </svg>
+          </a>
+
+          <!-- X / Twitter -->
+          <a href="#" class="social-btn" aria-label="X (Twitter)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ================================================================
+       JAVASCRIPT — Scroll effects & mobile nav
+  ================================================================ -->
+  <script>
+    // ── Nav: add .scrolled class after 40px of scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ── Scroll reveal via IntersectionObserver
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      }),
+      { threshold: 0.12, rootMargin: '0px 0px -48px 0px' }
+    );
+
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Fire hero reveal immediately
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('visible'));
+    });
+
+    // ── Mobile nav
+    const menuBtn   = document.getElementById('menuBtn');
+    const menuClose = document.getElementById('menuClose');
+    const mobileNav = document.getElementById('mobileNav');
+
+    function openMobileNav()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+    function closeMobileNav() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+
+    menuBtn.addEventListener('click',   openMobileNav);
+    menuClose.addEventListener('click', closeMobileNav);
+
+    // Close on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeMobileNav();
+    });
+  </script>
+
+</body>
+</html>
