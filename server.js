@@ -3,6 +3,7 @@
 // Deploy to Railway or Vercel (serverless via api/index.js)
 // ============================================================
 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
@@ -12,6 +13,7 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Clients ---
 const supabase = createClient(
