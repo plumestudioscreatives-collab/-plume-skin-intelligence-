@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signal Flow™ · Plume Studios</title>
+  <meta name="description" content="Real-time intelligence for clinics and brands — outcomes, trends, and AI predictions from logged beauty lover and clinic data."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+
+    :root {
+      --bg:            #d9cef0;
+      --surface:       #efe9f9;
+      --surface-hover: #e6def5;
+      --elevated:      #f6f1fc;
+      --border:        #c4b5e2;
+      --border-light:  #b39fd6;
+      --accent:        #7c4dc4;
+      --accent-light:  #a87ad6;
+      --accent-muted:  #9b7fd0;
+      --coral:         #e85a6b;
+      --mint:          #5fb594;
+      --amber:         #f0b85a;
+      --text-primary:  #2a1f4a;
+      --text-secondary:#5b4f7a;
+      --text-muted:    #7d7298;
+      --serif:         'Playfair Display', Georgia, serif;
+      --sans:          'DM Sans', system-ui, sans-serif;
+      --mono:          'IBM Plex Mono', monospace;
+      --logo-grad:     linear-gradient(135deg,#CC1030 0%,#E04020 22%,#F09050 48%,#F0C060 74%,#78D8E8 100%);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+    /* ── Top nav ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 50;
+      height: 56px;
+      background: rgba(239,233,249,.92);
+      backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+    }
+    .topnav-back { font-size:12px; color:var(--text-muted); text-decoration:none; display:flex; align-items:center; gap:6px; transition:color .2s; }
+    .topnav-back:hover { color:var(--accent); }
+    .topnav-divider { width:1px; height:18px; background:var(--border); }
+    .topnav-logo { display:flex; align-items:center; gap:8px; text-decoration:none; }
+    .topnav-logo img { width:26px; height:26px; border-radius:7px; }
+    .topnav-logo-text { font-family:var(--serif); font-size:1.1rem; color:var(--text-primary); }
+    .topnav-sf { font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-light); font-weight:500; }
+    .topnav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
+    .topnav-pts { font-size:12px; color:var(--text-muted); font-family:var(--mono); }
+    .topnav-pts strong { color:var(--accent); }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 18px;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 4px 14px 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sidebar-dot { width:6px; height:6px; border-radius:50%; background:var(--mint); flex-shrink:0; }
+    .sidebar-title { font-size:11px; color:var(--accent-light); letter-spacing:.18em; text-transform:uppercase; font-weight:600; font-family:var(--mono); }
+
+    .mod-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 10px; cursor: pointer;
+      background: transparent;
+      border-left: 3px solid transparent;
+      margin-bottom: 2px; width: 100%; border: none;
+      text-align: left; outline: none;
+      transition: all .2s ease;
+      color: var(--text-primary);
+    }
+    .mod-btn:hover { background: var(--surface-hover); }
+    .mod-btn.active {
+      background: var(--elevated);
+      border-left: 3px solid var(--accent);
+    }
+    .mod-icon { font-size:18px; flex-shrink:0; }
+    .mod-name { font-size:13px; color:var(--text-secondary); font-weight:400; }
+    .mod-btn.active .mod-name { color:var(--text-primary); font-weight:500; }
+    .mod-sub { font-size:11px; color:var(--text-muted); margin-top:2px; }
+
+    /* Signal Coverage */
+    .coverage-box {
+      background: var(--surface); border:1px solid var(--border);
+      border-radius:12px; padding:16px; margin-top:18px;
+    }
+    .coverage-title { font-family:var(--serif); font-size:14px; color:var(--text-primary); margin-bottom:14px; font-weight:500; }
+    .coverage-item { margin-bottom:12px; }
+    .coverage-row { display:flex; justify-content:space-between; margin-bottom:5px; }
+    .coverage-label { font-size:12px; color:var(--text-secondary); }
+    .coverage-count { font-size:12px; color:var(--text-muted); }
+    .coverage-track { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .coverage-fill { height:100%; border-radius:2px; }
+    .coverage-footer { display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+    .coverage-status { display:flex; align-items:center; gap:6px; }
+    .status-dot { width:6px; height:6px; border-radius:50%; background:var(--mint); }
+    .status-label { font-size:11px; color:var(--text-muted); letter-spacing:.06em; text-transform:uppercase; font-family:var(--mono); }
+    .coverage-pts { font-size:11px; color:var(--text-secondary); }
+
+    /* Tip Box */
+    .tip-box {
+      background: var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:14px; margin-top:10px;
+    }
+    .tip-label { font-size:10px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; font-weight:600; font-family:var(--mono); }
+    .tip-text { font-size:12px; color:var(--text-secondary); line-height:1.5; }
+
+    /* ── Main content ── */
+    .main { padding: 40px 48px; max-width: 780px; width: 100%; }
+
+    .module-title { font-family:var(--serif); font-size:38px; font-weight:500; color:var(--text-primary); margin-bottom:12px; }
+    .module-sub { font-size:14px; color:var(--text-secondary); line-height:1.6; max-width:720px; margin-bottom:24px; }
+
+    /* Prediction cards */
+    .pred-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 14px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .5s ease, transform .5s ease;
+    }
+    .pred-card.visible { opacity:1; transform:translateY(0); }
+
+    .pred-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:12px; }
+    .pred-icon { font-size:24px; flex-shrink:0; }
+    .pred-meta { flex:1; }
+    .pred-title { font-family:var(--serif); font-size:18px; font-weight:500; color:var(--text-primary); margin-bottom:8px; line-height:1.35; }
+    .pred-badge { display:inline-block; font-size:10px; padding:4px 9px; border-radius:4px; letter-spacing:.08em; font-weight:600; font-family:var(--mono); }
+    .pred-confidence { font-family:var(--serif); font-size:32px; font-weight:500; color:var(--accent-light); line-height:1; flex-shrink:0; }
+    .pred-confidence small { font-size:14px; color:var(--text-muted); }
+
+    .pred-body { font-size:14px; color:var(--text-secondary); line-height:1.6; margin-bottom:16px; }
+
+    .pred-action {
+      background: var(--elevated);
+      border-left: 2px solid var(--accent);
+      padding: 12px 14px; border-radius:6px; margin-bottom:14px;
+    }
+    .pred-action-label { font-size:10px; color:var(--accent-light); letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; font-weight:600; font-family:var(--mono); }
+    .pred-action-text { font-size:13px; color:var(--text-primary); line-height:1.5; }
+
+    .pred-based-label { font-size:10px; color:var(--text-muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; font-family:var(--mono); }
+    .pred-tags { display:flex; gap:6px; flex-wrap:wrap; }
+    .pred-tag { font-size:11px; padding:4px 10px; border-radius:20px; background:var(--elevated); color:var(--text-secondary); border:1px solid var(--border); }
+
+    /* Confidence bar */
+    .conf-bar-wrap { margin-top:16px; }
+    .conf-bar-header { display:flex; justify-content:space-between; margin-bottom:6px; }
+    .conf-bar-label { font-size:11px; color:var(--text-muted); letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono); }
+    .conf-bar-pct { font-size:11px; color:var(--accent-light); font-weight:600; }
+    .conf-bar-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .conf-bar-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius:2px; width:0%; transition:width .9s ease; }
+
+    /* Badge types */
+    .badge-primary   { background:rgba(124,77,196,.12); color:#6a3ab5; border:1px solid rgba(124,77,196,.28); }
+    .badge-secondary { background:rgba(168,122,214,.14); color:#7c4dc4; border:1px solid rgba(168,122,214,.28); }
+    .badge-success   { background:rgba(95,181,148,.14);  color:#3f8a6d; border:1px solid rgba(95,181,148,.3); }
+    .badge-alert     { background:rgba(232,90,107,.12);  color:#c4374c; border:1px solid rgba(232,90,107,.3); }
+
+    /* Responsive */
+    @media(max-width:768px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { position:static; height:auto; border-right:none; border-bottom:1px solid var(--border); }
+      .main { padding:24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="topnav">
+  <a href="/" class="topnav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Back
+  </a>
+  <div class="topnav-divider"></div>
+  <a href="/" class="topnav-logo">
+    <img src="/logo.svg" alt="Plume logo"/>
+    <span class="topnav-logo-text">Plume</span>
+  </a>
+  <div class="topnav-divider"></div>
+  <span class="topnav-sf">Signal Flow™</span>
+  <div class="topnav-right">
+    <span class="topnav-pts"><strong>11</strong> data points</span>
+  </div>
+</nav>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-dot"></span>
+      <span class="sidebar-title">Signal Flow™</span>
+    </div>
+    <div id="module-list"></div>
+
+    <!-- Signal Coverage -->
+    <div class="coverage-box">
+      <div class="coverage-title">Signal Coverage</div>
+      <div class="coverage-item">
+        <div class="coverage-row">
+          <span class="coverage-label">Product reviews</span>
+          <span class="coverage-count">5</span>
+        </div>
+        <div class="coverage-track">
+          <div class="coverage-fill" style="width:50%;background:var(--accent);"></div>
+        </div>
+      </div>
+      <div class="coverage-item">
+        <div class="coverage-row">
+          <span class="coverage-label">Treatment logs</span>
+          <span class="coverage-count">6</span>
+        </div>
+        <div class="coverage-track">
+          <div class="coverage-fill" style="width:60%;background:var(--coral);"></div>
+        </div>
+      </div>
+      <div class="coverage-footer">
+        <div class="coverage-status">
+          <span class="status-dot"></span>
+          <span class="status-label">Signal active</span>
+        </div>
+        <span class="coverage-pts">11 data points</span>
+      </div>
+    </div>
+
+    <!-- Tip boxes -->
+    <div class="tip-box" style="border-left:2px solid var(--accent);">
+      <div class="tip-label" style="color:var(--accent);">Clinic Tip</div>
+      <p class="tip-text">Log treatment outcomes in your clinic portal to feed Signal Flow with real-world data.</p>
+    </div>
+    <div class="tip-box" style="border-left:2px solid var(--coral);">
+      <div class="tip-label" style="color:var(--coral);">Brand Tip</div>
+      <p class="tip-text">Sync product catalog with Plume to activate commerce intelligence.</p>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main" id="main-content">
+    <!-- Rendered by JS -->
+  </main>
+
+</div>
+
+<script>
+  /* ─── Data ──────────────────────────────────────────────────────────────── */
+  const MODULES = [
+    { id:"outcome",   icon:"🧬", name:"Outcome Intelligence",   sub:"Treatment + Product → Result" },
+    { id:"treatment", icon:"💉", name:"Treatment Intelligence", sub:"Retention · Satisfaction" },
+    { id:"product",   icon:"🧴", name:"Product Intelligence",   sub:"Repurchase · Compatibility" },
+    { id:"trend",     icon:"📊", name:"Trend Intelligence",     sub:"Rising · Stable · Declining" },
+    { id:"consumer",  icon:"✦",  name:"Consumer Intelligence",  sub:"Your skin journey" },
+    { id:"predictive",icon:"🔮", name:"Predictive Intelligence",sub:"AI from your data" },
+    { id:"skin",      icon:"🪞", name:"Skin Intelligence",      sub:"Profile · Concerns · Progress" },
+    { id:"regional",  icon:"📍", name:"Regional Performance",   sub:"Location · Market signals" },
+    { id:"retention", icon:"🔁", name:"Retention Intelligence", sub:"Churn · Loyalty · LTV" },
+    { id:"seasonal",  icon:"🍂", name:"Seasonal Intelligence",  sub:"Cycles · Demand · Timing" },
+  ];
+
+  const PREDICTIONS = {
+    outcome: [
+      { icon:"🧴", title:"Barrier support may improve your outcomes", badge:"WORTH CONSIDERING", badgeType:"primary", confidence:72, body:"3 people with similar skin profiles to yours saw improved recovery when adding a barrier repair serum post-treatment.", action:"Ask your clinic about a post-treatment barrier protocol", basedOn:["Treatment recovery patterns","Similar skin profiles","Product review data"] },
+      { icon:"🎭", title:"RF Microneedling shows strong results for your concern", badge:"FOR YOUR NEXT REVIEW", badgeType:"success", confidence:85, body:"Clients using RF Microneedling + Barrier Restore Complex saw an average +31 point skin improvement.", action:"Discuss RF Microneedling at your next clinic visit", basedOn:["Treatment logs","Outcome data","Skin profile match"] },
+    ],
+    treatment: [
+      { icon:"💉", title:"Treatment spacing may affect your retention", badge:"PATTERN DETECTED", badgeType:"secondary", confidence:68, body:"Clients who space treatments 4–6 weeks apart show 2.3× higher retention than those on 8+ week intervals.", action:"Review your rebooking cadence with your provider", basedOn:["Retention curves","Treatment frequency logs","Satisfaction scores"] },
+    ],
+    product: [
+      { icon:"🧴", title:"High repurchase signal on your current serum", badge:"STRONG SIGNAL", badgeType:"success", confidence:91, body:"87% of clients with your skin type repurchased this serum within 60 days. Compatibility score: 9.2/10.", action:"Consider auto-replenishment or subscription pricing", basedOn:["Repurchase data","Compatibility scoring","Skin type match"] },
+    ],
+    trend: [
+      { icon:"📈", title:"Peptide serums trending up in your region", badge:"RISING", badgeType:"primary", confidence:78, body:"Peptide-based products saw +44% search volume and +29% clinic inquiries in the last 30 days.", action:"Evaluate peptide SKU additions for your retail shelf", basedOn:["Search trends","Clinic inquiry data","Regional demand"] },
+    ],
+    consumer: [
+      { icon:"✦", title:"Your skin journey suggests a shift in priorities", badge:"INSIGHT", badgeType:"secondary", confidence:65, body:"Based on your logged concerns and review history, your focus has moved from acne to anti-aging over the past 6 months.", action:"Update your skin profile to reflect current goals", basedOn:["Concern history","Review sentiment","Product selections"] },
+    ],
+    predictive: [
+      { icon:"🔮", title:"Predicted improvement with current protocol", badge:"AI FORECAST", badgeType:"primary", confidence:74, body:"Based on 11 data points, your current treatment + product combination is projected to yield a +22 point improvement in 8 weeks.", action:"Stay consistent with your current protocol", basedOn:["Treatment recovery patterns","Similar skin profiles","Product review data"] },
+    ],
+    skin: [
+      { icon:"🪞", title:"Skin barrier score declining — action recommended", badge:"ATTENTION", badgeType:"alert", confidence:80, body:"Your barrier health index dropped 18% since last assessment. Linked to recent exfoliation frequency.", action:"Reduce active exfoliation and add ceramide support", basedOn:["Skin profile logs","Product usage data","Assessment history"] },
+    ],
+    regional: [
+      { icon:"📍", title:"Your region outperforms national average on injectables", badge:"MARKET INSIGHT", badgeType:"success", confidence:82, body:"Injectable revenue in your metro area is +19% above the national average. Demand is accelerating in Q2.", action:"Expand injectable service offerings or provider hours", basedOn:["Regional revenue data","National benchmarks","Seasonal demand"] },
+    ],
+    retention: [
+      { icon:"🔁", title:"Churn risk elevated for 12 clients", badge:"ACTION NEEDED", badgeType:"alert", confidence:71, body:"12 clients haven't rebooked within their typical cadence. Average LTV at risk: $4,200.", action:"Trigger a re-engagement sequence for at-risk clients", basedOn:["Rebooking cadence","LTV modeling","Engagement signals"] },
+    ],
+    seasonal: [
+      { icon:"🍂", title:"Peel season approaching — demand spike expected", badge:"SEASONAL FORECAST", badgeType:"primary", confidence:89, body:"Chemical peel bookings historically increase 58% in September–November. Inventory and scheduling prep recommended.", action:"Pre-order peel supplies and open fall booking slots", basedOn:["Historical booking data","Seasonal curves","Inventory logs"] },
+    ],
+  };
+
+  /* ─── State ─────────────────────────────────────────────────────────────── */
+  let activeModule = 'outcome';
+
+  /* ─── Sidebar render ─────────────────────────────────────────────────────── */
+  function renderSidebar() {
+    const list = document.getElementById('module-list');
+    list.innerHTML = MODULES.map(mod => `
+      <button
+        class="mod-btn ${activeModule === mod.id ? 'active' : ''}"
+        onclick="setModule('${mod.id}')"
+        data-id="${mod.id}"
+      >
+        <span class="mod-icon">${mod.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div class="mod-name">${mod.name}</div>
+          <div class="mod-sub">${mod.sub}</div>
+        </div>
+      </button>
+    `).join('');
+  }
+
+  /* ─── Prediction card HTML ───────────────────────────────────────────────── */
+  function predCardHTML(pred, index) {
+    const tags = pred.basedOn.map(t => `<span class="pred-tag">${t}</span>`).join('');
+    return `
+      <div class="pred-card" data-delay="${index * 80}" data-conf="${pred.confidence}">
+        <div class="pred-header">
+          <span class="pred-icon">${pred.icon}</span>
+          <div class="pred-meta">
+            <h3 class="pred-title">${pred.title}</h3>
+            <span class="pred-badge badge-${pred.badgeType}">${pred.badge}</span>
+          </div>
+          <div class="pred-confidence">${pred.confidence}<small>%</small></div>
+        </div>
+        <p class="pred-body">${pred.body}</p>
+        <div class="pred-action">
+          <div class="pred-action-label">What to do</div>
+          <div class="pred-action-text">${pred.action}</div>
+        </div>
+        <div class="pred-based-label">Based on</div>
+        <div class="pred-tags">${tags}</div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-header">
+            <span class="conf-bar-label">AI confidence</span>
+            <span class="conf-bar-pct">${pred.confidence}%</span>
+          </div>
+          <div class="conf-bar-track">
+            <div class="conf-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ─── Main render ────────────────────────────────────────────────────────── */
+  function renderMain() {
+    const mod = MODULES.find(m => m.id === activeModule);
+    const preds = PREDICTIONS[activeModule] || PREDICTIONS.predictive;
+    const main = document.getElementById('main-content');
+
+    main.innerHTML = `
+      <h1 class="module-title">${mod.name}</h1>
+      <p class="module-sub">${mod.sub}</p>
+      ${preds.map((p, i) => predCardHTML(p, i)).join('')}
+    `;
+
+    /* Animate cards in with staggered delay */
+    requestAnimationFrame(() => {
+      main.querySelectorAll('.pred-card').forEach(card => {
+        const delay = parseInt(card.dataset.delay) || 0;
+        setTimeout(() => card.classList.add('visible'), delay);
+      });
+    });
+
+    /* Animate confidence bars after cards appear */
+    main.querySelectorAll('.pred-card').forEach((card, i) => {
+      const fill = card.querySelector('.conf-bar-fill');
+      const conf = parseInt(card.dataset.conf) || 0;
+      setTimeout(() => { fill.style.width = conf + '%'; }, 100 + i * 80);
+    });
+  }
+
+  /* ─── Module switch ──────────────────────────────────────────────────────── */
+  function setModule(id) {
+    activeModule = id;
+    renderSidebar();
+    renderMain();
+    /* Scroll main to top */
+    document.getElementById('main-content').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  /* ─── Init ───────────────────────────────────────────────────────────────── */
+  renderSidebar();
+  renderMain();
+</script>
+</body>
+</html>
