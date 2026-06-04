@@ -3,9 +3,9 @@
 // Deploy to Railway or Vercel (serverless via api/index.js)
 // ============================================================
 
-const path = require('path');
+const path    = require('path');
 const express = require('express');
-const cors = require('cors');
+const cors    = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const Anthropic = require('@anthropic-ai/sdk');
 require('dotenv').config();

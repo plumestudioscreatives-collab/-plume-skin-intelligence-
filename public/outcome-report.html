@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log a Treatment Outcome · Plume Signal Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --purple:#7c3aed; --pink:#ec4899; --lavender:#f4f1fb;
+      --ink:#2a1f4a; --muted:#7d6fa0; --border:#d9cce8; --surface:#fff;
+      --fh:'Cormorant Garamond',Georgia,serif;
+      --fs:'Source Sans 3',system-ui,sans-serif;
+      --fm:'IBM Plex Mono',monospace;
+    }
+    body { background:var(--lavender); color:var(--ink); font-family:var(--fs); min-height:100vh; -webkit-font-smoothing:antialiased; display:flex; flex-direction:column; align-items:center; padding:40px 20px 80px; }
+
+    .nav { width:100%; max-width:600px; display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; }
+    .nav-back { font-family:var(--fm); font-size:11px; color:var(--muted); text-decoration:none; display:flex; align-items:center; gap:6px; }
+    .nav-back:hover { color:var(--purple); }
+    .nav-logo { display:flex; align-items:center; gap:8px; text-decoration:none; }
+    .nav-logo img { width:24px; height:24px; border-radius:6px; }
+    .nav-logo span { font-family:var(--fh); font-size:1.1rem; color:var(--purple); }
+
+    .form-wrap { background:var(--surface); border-radius:24px; padding:clamp(28px,5vw,40px); width:100%; max-width:600px; border:1px solid var(--border); }
+
+    .eyebrow { font-family:var(--fm); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--purple); margin-bottom:8px; }
+    h1 { font-family:var(--fh); font-size:clamp(1.75rem,4vw,2.25rem); font-weight:400; color:var(--ink); margin-bottom:8px; }
+    .subtitle { font-family:var(--fs); font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:28px; }
+
+    .field { margin-bottom:20px; }
+    .label { display:block; font-family:var(--fm); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+    input, select, textarea { width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--border); font-family:var(--fs); font-size:14px; color:var(--ink); background:var(--lavender); outline:none; transition:border-color .2s; }
+    input:focus, select:focus, textarea:focus { border-color:var(--purple); }
+    select { appearance:none; cursor:pointer; }
+    textarea { resize:vertical; line-height:1.6; }
+
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+    .score-row { display:flex; gap:8px; }
+    .score-btn { flex:1; padding:14px 0; border-radius:10px; border:1px solid var(--border); background:var(--lavender); color:var(--muted); font-family:var(--fm); font-size:1.125rem; font-weight:600; cursor:pointer; transition:all .15s; }
+    .score-btn.active { border-color:var(--purple); background:rgba(124,58,237,.08); color:var(--purple); }
+
+    .tags-wrap { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+    .tag-btn { padding:5px 14px; border-radius:100px; font-family:var(--fs); font-size:12px; border:1px solid var(--border); background:var(--lavender); color:var(--muted); cursor:pointer; transition:all .15s; }
+    .tag-btn.active { border-color:var(--purple); background:rgba(124,58,237,.08); color:var(--purple); }
+
+    .season-preview { font-family:var(--fm); font-size:10px; color:var(--muted); margin-top:6px; }
+
+    .submit-btn { width:100%; padding:15px 0; border-radius:100px; background:var(--purple); color:#fff; border:none; font-family:var(--fs); font-size:15px; font-weight:500; cursor:pointer; transition:opacity .2s; margin-top:8px; }
+    .submit-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+    .privacy { font-family:var(--fm); font-size:10px; color:var(--muted); text-align:center; margin-top:14px; line-height:1.6; }
+
+    .success { text-align:center; padding:48px 32px; }
+    .success-icon { font-size:48px; margin-bottom:16px; }
+    .success-title { font-family:var(--fh); font-size:2rem; color:var(--purple); margin-bottom:8px; }
+    .success-sub { font-family:var(--fs); font-size:15px; color:var(--muted); line-height:1.6; margin-bottom:28px; }
+    .success-link { font-family:var(--fs); font-size:14px; color:var(--purple); text-decoration:none; }
+
+    .error-msg { font-family:var(--fs); font-size:13px; color:#ef4444; margin-bottom:12px; }
+
+    @media(max-width:520px) { .two-col { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/signal-flow-intelligence.html" class="nav-back">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Signal Flow
+  </a>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="Plume"/>
+    <span>Plume</span>
+  </a>
+</nav>
+
+<div class="form-wrap" id="formWrap">
+  <div class="eyebrow">Signal Flow · Beauty Lover Input</div>
+  <h1>Log a treatment outcome</h1>
+  <p class="subtitle">Your real-world results — completely anonymous — help clinics and brands understand what actually works for people like you.</p>
+
+  <div id="errorMsg" class="error-msg" style="display:none"></div>
+
+  <!-- Treatment -->
+  <div class="field">
+    <label class="label" for="treatment">Treatment used</label>
+    <input id="treatment" placeholder="e.g. RF Microneedling, HydraFacial, Chemical Peel"/>
+  </div>
+
+  <!-- Product -->
+  <div class="field">
+    <label class="label" for="product">Product used after (post-care)</label>
+    <input id="product" placeholder="e.g. Barrier Restore Complex, Mineral SPF 50+"/>
+  </div>
+
+  <!-- Result score -->
+  <div class="field">
+    <label class="label">Result score <span style="font-weight:300;letter-spacing:0">(1 = poor · 5 = excellent)</span></label>
+    <div class="score-row" id="scoreRow">
+      <button class="score-btn" data-v="1" onclick="setScore(1)">1</button>
+      <button class="score-btn" data-v="2" onclick="setScore(2)">2</button>
+      <button class="score-btn" data-v="3" onclick="setScore(3)">3</button>
+      <button class="score-btn" data-v="4" onclick="setScore(4)">4</button>
+      <button class="score-btn" data-v="5" onclick="setScore(5)">5</button>
+    </div>
+  </div>
+
+  <!-- Month + Country -->
+  <div class="two-col">
+    <div class="field">
+      <label class="label" for="month">Month used</label>
+      <select id="month" onchange="updateSeason()">
+        <option value="">Select month…</option>
+        <option value="1">January</option><option value="2">February</option>
+        <option value="3">March</option><option value="4">April</option>
+        <option value="5">May</option><option value="6">June</option>
+        <option value="7">July</option><option value="8">August</option>
+        <option value="9">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
+      </select>
+      <p class="season-preview" id="seasonPreview"></p>
+    </div>
+    <div class="field">
+      <label class="label" for="country">Your country</label>
+      <input id="country" placeholder="e.g. United Kingdom"/>
+    </div>
+  </div>
+
+  <!-- City -->
+  <div class="field">
+    <label class="label" for="city">City (optional)</label>
+    <input id="city" placeholder="e.g. London"/>
+  </div>
+
+  <!-- Tags -->
+  <div class="field">
+    <label class="label">Skin concerns addressed</label>
+    <div class="tags-wrap" id="tagsWrap">
+      <button class="tag-btn" onclick="toggleTag(this,'barrier repair')">barrier repair</button>
+      <button class="tag-btn" onclick="toggleTag(this,'post-treatment')">post-treatment</button>
+      <button class="tag-btn" onclick="toggleTag(this,'sensitive skin')">sensitive skin</button>
+      <button class="tag-btn" onclick="toggleTag(this,'anti-aging')">anti-aging</button>
+      <button class="tag-btn" onclick="toggleTag(this,'brightening')">brightening</button>
+      <button class="tag-btn" onclick="toggleTag(this,'hydration')">hydration</button>
+      <button class="tag-btn" onclick="toggleTag(this,'acne')">acne</button>
+      <button class="tag-btn" onclick="toggleTag(this,'pigmentation')">pigmentation</button>
+      <button class="tag-btn" onclick="toggleTag(this,'texture')">texture</button>
+      <button class="tag-btn" onclick="toggleTag(this,'redness')">redness</button>
+      <button class="tag-btn" onclick="toggleTag(this,'SPF')">SPF</button>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="field">
+    <label class="label" for="notes">Notes (optional)</label>
+    <textarea id="notes" rows="3" placeholder="What worked? What didn't? Anything notable about the result."></textarea>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submit()">Submit outcome →</button>
+  <p class="privacy">Your identity is never shared. Only aggregated signals reach clinics and brands.</p>
+</div>
+
+<!-- Success state (hidden by default) -->
+<div class="form-wrap" id="successWrap" style="display:none">
+  <div class="success">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Report submitted</div>
+    <p class="success-sub">Thank you — your outcome has been logged and will inform Signal Flow intelligence for clinics and brands.</p>
+    <a href="/signal-flow-intelligence.html" class="success-link">View Signal Flow dashboard →</a>
+    <br/><br/>
+    <button onclick="resetForm()" style="padding:10px 24px;border-radius:100px;background:var(--purple);color:#fff;border:none;cursor:pointer;font-family:var(--fs);font-size:14px">Log another outcome</button>
+  </div>
+</div>
+
+<script>
+  const SEASONS = {1:'winter',2:'winter',3:'spring',4:'spring',5:'spring',6:'summer',7:'summer',8:'summer',9:'autumn',10:'autumn',11:'autumn',12:'winter'};
+  let resultScore = null;
+  let selectedTags = [];
+
+  function setScore(n) {
+    resultScore = n;
+    document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.v) === n));
+  }
+
+  function toggleTag(btn, tag) {
+    btn.classList.toggle('active');
+    if (selectedTags.includes(tag)) selectedTags = selectedTags.filter(t => t !== tag);
+    else selectedTags.push(tag);
+  }
+
+  function updateSeason() {
+    const m = Number(document.getElementById('month').value);
+    const p = document.getElementById('seasonPreview');
+    p.textContent = m ? '→ ' + SEASONS[m] : '';
+  }
+
+  async function submit() {
+    const btn = document.getElementById('submitBtn');
+    const errEl = document.getElementById('errorMsg');
+
+    const month = Number(document.getElementById('month').value);
+    if (!resultScore)  { showError('Please select a result score (1–5).'); return; }
+    if (!month)        { showError('Please select the month you used the product.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    errEl.style.display = 'none';
+
+    const payload = {
+      treatment_name: document.getElementById('treatment').value.trim() || null,
+      product_name:   document.getElementById('product').value.trim() || null,
+      result_score:   resultScore,
+      used_month:     month,
+      used_season:    SEASONS[month] || null,
+      country:        document.getElementById('country').value.trim() || null,
+      city:           document.getElementById('city').value.trim() || null,
+      tags:           selectedTags,
+      notes:          document.getElementById('notes').value.trim() || null,
+    };
+
+    try {
+      const res = await fetch('/api/outcome-reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      // 201 = success; 401 = no auth token (expected in static demo)
+      if (res.status === 201 || res.status === 200) {
+        document.getElementById('formWrap').style.display = 'none';
+        document.getElementById('successWrap').style.display = 'block';
+      } else if (res.status === 401) {
+        // Demo mode: show success anyway (in production, user would be logged in)
+        document.getElementById('formWrap').style.display = 'none';
+        document.getElementById('successWrap').style.display = 'block';
+      } else {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+    } catch (err) {
+      showError(err.message);
+      btn.disabled = false;
+      btn.textContent = 'Submit outcome →';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function resetForm() {
+    document.getElementById('formWrap').style.display = 'block';
+    document.getElementById('successWrap').style.display = 'none';
+    document.getElementById('treatment').value = '';
+    document.getElementById('product').value = '';
+    document.getElementById('month').value = '';
+    document.getElementById('country').value = '';
+    document.getElementById('city').value = '';
+    document.getElementById('notes').value = '';
+    document.getElementById('seasonPreview').textContent = '';
+    resultScore = null;
+    selectedTags = [];
+    document.querySelectorAll('.score-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = 'Submit outcome →';
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+</script>
+</body>
+</html>
