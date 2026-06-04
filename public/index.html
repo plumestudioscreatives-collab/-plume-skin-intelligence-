@@ -4,395 +4,403 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Plume — Intelligent Beauty Commerce</title>
-  <meta name="description" content="Plume connects aesthetic clinics, beauty brands, and beauty lovers commission-free — powered by Plume SignalFlow."/>
+  <meta name="description" content="Plume connects aesthetic clinics, beauty brands, and beauty lovers commission-free — all powered by Plume SignalFlow."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior:smooth; }
 
     :root {
-      /* ── Logo-extracted palette ─────────────────────── */
-      --lavender-deep:  #C9BDE8;   /* exact logo background */
-      --lavender:       #D8D0EE;
-      --lavender-light: #E8E2F6;
-      --lavender-pale:  #F2EFF9;
-      --canvas:         #F7F4FC;   /* near-white page canvas */
-
-      /* Logo gradient arc */
-      --crimson:  #CC1030;
-      --coral:    #E04020;
-      --peach:    #F09050;
-      --gold:     #F0C060;
-      --cyan:     #78D8E8;
-      --logo-grad: linear-gradient(135deg,#CC1030 0%,#E04020 22%,#F09050 48%,#F0C060 74%,#78D8E8 100%);
-
-      /* Brand purple (kept for CTAs) */
-      --purple:       #7C3AED;
-      --purple-deep:  #6D28D9;
-      --purple-light: #EDE9FE;
-
-      /* Text */
-      --ink:       #1E1430;
-      --ink-soft:  #4A3A6A;
-      --ink-muted: #7A6E96;
-      --border:    #D8CFF0;
-      --border-strong: #BEB0DC;
-
-      --serif: 'Crimson Pro', Georgia, serif;
-      --sans:  'DM Sans', system-ui, sans-serif;
-      --mono:  'IBM Plex Mono', monospace;
+      --plume-lavender:      #E8E2F4;
+      --plume-lavender-soft: #F2EEF9;
+      --ink:      #2a1f4a;
+      --ink-soft: #5b4870;
+      --plume-purple: #7c3aed;
+      --plume-coral:  #ef3b5a;
+      --plume-yellow: #fbbf3a;
+      --plume-mint:   #b9e4e1;
+      --plume-peach:  #fcd7b8;
+      --fh: 'Crimson Pro', Georgia, serif;
+      --fb: 'Crimson Pro', Georgia, serif;
     }
 
     body {
-      background: var(--canvas);
+      background: var(--plume-lavender);
       color: var(--ink);
-      font-family: var(--sans);
-      -webkit-font-smoothing: antialiased;
+      font-family: var(--fb);
+      font-weight: 300;
+      min-height: 100vh;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Grain */
-    body::after {
-      content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
-      background-size:300px; opacity:.022; mix-blend-mode:overlay;
+    a { color: inherit; }
+    em { font-style: italic; }
+    strong { font-weight: 600; }
+
+    /* ── Layout utilities ── */
+    .w-max { width: min(1280px, 100%); margin: 0 auto; padding: 0 clamp(24px, 4vw, 40px); }
+    .w-med { width: min(1180px, 100%); margin: 0 auto; padding: 0 clamp(24px, 4vw, 40px); }
+    .w-sm  { width: min(768px,  100%); margin: 0 auto; padding: 0 clamp(24px, 4vw, 40px); }
+
+    /* ── NAV ── */
+    nav.topnav {
+      padding: 24px clamp(24px,4vw,40px);
+      background: rgba(216,207,236,0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
+    .nav-inner { max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+    .nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+    .nav-logo img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .nav-logo-name { font-family:var(--fh); font-size:1.875rem; color:var(--plume-purple); line-height:1; letter-spacing:-.01em; }
+    .nav-links { display:flex; gap:40px; list-style:none; }
+    .nav-links a { font-size:14px; color:var(--ink); text-decoration:none; letter-spacing:.04em; transition:color .2s; }
+    .nav-links a:hover { color:var(--plume-purple); }
+    .nav-auth { display:flex; align-items:center; gap:12px; }
+    .btn-nav { font-family:var(--fh); font-size:15px; font-weight:500; padding:10px 22px; border-radius:9999px; text-decoration:none; transition:all .2s; }
+    .btn-nav-ghost { border:1px solid rgba(42,31,74,.3); color:var(--ink); }
+    .btn-nav-ghost:hover { background:rgba(42,31,74,.06); }
+    .btn-nav-fill { background:var(--plume-purple); color:#fff; box-shadow:0 10px 30px -8px rgba(124,58,237,.5); }
+    .btn-nav-fill:hover { background:#6d28d9; transform:translateY(-1px); }
+    .hamburger-btn { display:none; background:none; border:none; cursor:pointer; color:var(--ink); }
 
-    .container { width:min(1200px,100%); margin:0 auto; padding:0 clamp(20px,5vw,64px); }
-    .serif { font-family:var(--serif); }
-    .logo-grad-text { background:var(--logo-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    /* ── Blob ── */
+    .blob { position:absolute; pointer-events:none; border-radius:50%; }
 
-    /* ── Buttons ── */
-    .btn { display:inline-flex; align-items:center; gap:8px; padding:14px 28px; border-radius:100px; font-family:var(--sans); font-size:14px; font-weight:500; text-decoration:none; cursor:pointer; border:none; transition:.3s cubic-bezier(.22,1,.36,1); }
-    .btn-purple { background:var(--purple); color:#fff; box-shadow:0 8px 28px -8px rgba(124,58,237,.45); }
-    .btn-purple:hover { background:var(--purple-deep); transform:translateY(-2px); box-shadow:0 12px 36px -8px rgba(124,58,237,.52); }
-    .btn-ghost { background:transparent; color:var(--ink-soft); border:1.5px solid var(--border-strong); }
-    .btn-ghost:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-light); transform:translateY(-2px); }
-    .btn-outline { background:rgba(255,255,255,.6); color:var(--ink); border:1.5px solid var(--border); backdrop-filter:blur(8px); }
-    .btn-outline:hover { border-color:var(--purple); color:var(--purple); }
+    /* ── HERO ── */
+    .hero { position:relative; overflow:hidden; }
+    .hero-inner { max-width:1180px; margin:0 auto; padding: 80px clamp(24px,4vw,40px) 80px; position:relative; z-index:10; }
+    .hero-eyebrow { font-family:var(--fh); font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--plume-purple); margin-bottom:32px; display:block; }
+    .hero-h1 { font-family:var(--fh); font-weight:500; font-size:clamp(52px,9vw,132px); line-height:.98; letter-spacing:-.025em; margin-bottom:32px; max-width:900px; }
+    .hero-sub { font-family:var(--fh); font-size:clamp(17px,2vw,20px); line-height:1.625; color:var(--ink-soft); max-width:640px; margin-bottom:44px; }
+    .hero-ctas { display:flex; flex-wrap:wrap; align-items:center; gap:28px; }
+    .btn-hero-fill { display:inline-flex; align-items:center; justify-content:center; padding:16px 32px; border-radius:9999px; font-family:var(--fh); font-weight:500; font-size:15px; background:var(--plume-purple); color:#fff; text-decoration:none; box-shadow:0 14px 40px -12px rgba(124,58,237,.55); transition:transform .2s; }
+    .btn-hero-fill:hover { transform:translateY(-2px); }
+    .btn-hero-link { display:inline-flex; align-items:center; font-family:var(--fh); font-size:15px; color:var(--ink-soft); text-decoration:none; }
+    .btn-hero-link:hover { text-decoration:underline; text-underline-offset:4px; }
 
-    /* ── Nav ── */
-    .nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:20px 0; transition:all .4s; }
-    .nav.scrolled { padding:12px 0; background:rgba(247,244,252,.9); backdrop-filter:blur(20px) saturate(180%); box-shadow:0 1px 0 var(--border); }
-    .nav-inner { display:flex; align-items:center; justify-content:space-between; gap:24px; }
-    .nav-logo { display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
-    .nav-logo img { width:32px; height:32px; border-radius:8px; flex-shrink:0; }
-    .nav-logo-text { font-family:var(--serif); font-size:1.4rem; font-weight:400; color:var(--ink); letter-spacing:-.01em; }
-    .nav-links { display:flex; align-items:center; gap:28px; list-style:none; }
-    .nav-links a { font-size:.875rem; color:var(--ink-soft); text-decoration:none; transition:color .2s; }
-    .nav-links a:hover { color:var(--ink); }
-    .nav-ctas { display:flex; align-items:center; gap:10px; }
-    .nav-signin { font-size:.875rem; color:var(--ink-soft); text-decoration:none; padding:8px 14px; border-radius:8px; transition:color .2s; }
-    .nav-signin:hover { color:var(--purple); }
-    .nav-cta { padding:10px 20px; font-size:.875rem; }
-    .hamburger { display:none; background:none; border:none; cursor:pointer; color:var(--ink); }
+    /* ── BEAUTY LOVERS STRIP ── */
+    .strip { border-top:1px solid rgba(124,58,237,.18); }
+    .strip-inner { max-width:1180px; margin:0 auto; padding:clamp(40px,5vw,56px) clamp(24px,4vw,40px); display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:16px; }
+    .strip-h2 { font-family:var(--fh); font-weight:400; font-size:clamp(24px,3.2vw,36px); letter-spacing:-.01em; line-height:1.15; }
+    .strip-link { font-family:var(--fh); font-weight:500; font-size:15px; color:var(--plume-purple); text-decoration:none; white-space:nowrap; }
+    .strip-link:hover { text-decoration:underline; text-underline-offset:4px; }
 
-    /* ── Scroll reveal ── */
-    .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
-    .reveal.visible { opacity:1; transform:translateY(0); }
-    .d1{transition-delay:.08s} .d2{transition-delay:.16s} .d3{transition-delay:.24s} .d4{transition-delay:.32s}
+    /* ── PROBLEM ── */
+    .problem { position:relative; overflow:hidden; padding:6rem 0; }
+    .problem-inner { max-width:1280px; margin:0 auto; padding:0 clamp(24px,4vw,40px); position:relative; z-index:10; }
+    .section-eyebrow { font-size:12px; text-transform:uppercase; letter-spacing:.22em; color:var(--ink-soft); margin-bottom:24px; display:block; }
+    .problem-h2 { font-family:var(--fh); font-weight:400; font-size:clamp(36px,4.8vw,64px); line-height:1.1; letter-spacing:-.02em; max-width:900px; margin-bottom:48px; }
+    .problem-cols { display:grid; grid-template-columns:1fr 1fr; gap:64px; }
+    .problem-text p { font-size:18px; line-height:1.625; color:var(--ink-soft); margin-bottom:16px; }
+    .problem-text p:last-child { color:var(--ink); }
+    .problem-list { list-style:none; border-top:1px solid rgba(42,31,74,.15); }
+    .problem-list li { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid rgba(42,31,74,.15); }
+    .problem-list li span:first-child { font-size:16px; }
+    .problem-list-where { font-family:var(--fh); font-style:italic; font-size:18px; color:var(--ink-soft); }
 
-    /* ── Hero ── */
-    .hero { position:relative; min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:160px 0 120px; overflow:hidden; background:var(--canvas); }
-    .hero-blob { position:absolute; border-radius:50%; pointer-events:none; filter:blur(90px); }
-    .hero-blob-1 { width:1000px; height:1000px; top:-280px; left:50%; transform:translateX(-50%); background:radial-gradient(circle at 35% 35%, rgba(204,16,48,.2) 0%, rgba(240,144,80,.12) 45%, transparent 68%); animation:hb1 16s ease-in-out infinite; }
-    .hero-blob-2 { width:600px; height:600px; bottom:-60px; right:-100px; background:radial-gradient(circle, rgba(120,216,232,.18) 0%, rgba(240,192,96,.1) 50%, transparent 68%); animation:breathe 20s ease-in-out infinite 6s; }
-    .hero-blob-3 { width:500px; height:500px; bottom:0; left:-120px; background:radial-gradient(circle, rgba(204,16,48,.1) 0%, rgba(240,144,80,.06) 50%, transparent 68%); animation:breathe 18s ease-in-out infinite 3s; }
-    @keyframes hb1 { 0%,100%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.06)} }
-    @keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-    .hero-content { position:relative; z-index:2; max-width:900px; }
-    .hero-eyebrow { display:inline-flex; align-items:center; gap:12px; margin-bottom:28px; font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--purple); }
-    .hero-eyebrow::before,.hero-eyebrow::after { content:''; display:block; width:36px; height:1px; background:var(--logo-grad); opacity:.55; }
-    .hero-h1 { font-family:var(--serif); font-size:clamp(3rem,8vw,6rem); font-weight:400; line-height:1.05; letter-spacing:-.02em; color:var(--ink); margin-bottom:24px; }
-    .hero-h1 em { font-style:italic; background:var(--logo-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .hero-sub { font-size:clamp(1rem,2.2vw,1.25rem); font-weight:300; color:var(--ink-soft); max-width:640px; margin:0 auto 44px; line-height:1.7; }
-    .hero-ctas { display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
-    .hero-scroll { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--ink-muted); font-family:var(--mono); font-size:9px; letter-spacing:.2em; text-transform:uppercase; animation:scrollB 2.4s ease-in-out infinite; }
-    @keyframes scrollB { 0%,100%{opacity:.4;transform:translateX(-50%) translateY(0)} 55%{opacity:.8;transform:translateX(-50%) translateY(7px)} }
+    /* ── OFFER HEADER ── */
+    .offer-hdr { position:relative; overflow:hidden; padding:6rem 0; text-align:center; }
+    .offer-inner { max-width:1280px; margin:0 auto; padding:0 clamp(24px,4vw,40px); position:relative; z-index:10; }
+    .offer-h2 { font-family:var(--fh); font-weight:400; font-size:clamp(36px,5vw,76px); line-height:1.05; letter-spacing:-.02em; max-width:900px; margin:0 auto; }
 
-    /* ── Discover ── */
-    .discover { padding:clamp(60px,8vw,100px) 0; text-align:center; background:var(--lavender-light); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-    .discover-label { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--purple); margin-bottom:20px; }
-    .discover-h2 { font-family:var(--serif); font-size:clamp(1.75rem,4vw,2.75rem); font-weight:400; line-height:1.2; color:var(--ink); margin-bottom:28px; }
+    /* ── PRODUCTS ── */
+    .products { padding:4rem 0; }
+    .products-lede { max-width:768px; margin-bottom:64px; }
+    .products-lede h2 { font-family:var(--fh); font-weight:400; font-size:clamp(32px,4vw,56px); line-height:1.1; letter-spacing:-.02em; margin-bottom:16px; }
+    .products-lede p { font-size:18px; line-height:1.625; color:var(--ink-soft); }
+    .product-row { display:grid; grid-template-columns:1fr 2fr; gap:48px; padding:48px 0; border-top:1px solid rgba(42,31,74,.2); }
+    .product-row:last-child { border-bottom:1px solid rgba(42,31,74,.2); }
+    .product-left-num { font-family:var(--fh); font-style:italic; color:var(--ink-soft); font-size:16px; margin-bottom:12px; }
+    .product-left-name { font-family:var(--fh); font-size:2.5rem; font-weight:400; line-height:1; margin-bottom:10px; }
+    .product-left-tag { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); }
+    .product-hook { font-family:var(--fh); font-size:1.5rem; font-style:italic; font-weight:400; line-height:1.375; margin-bottom:14px; }
+    .product-body { font-size:16px; line-height:1.625; color:var(--ink-soft); margin-bottom:24px; max-width:560px; }
+    .product-feats { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:12px 28px; }
+    .product-feats li { font-size:15px; padding-left:20px; position:relative; line-height:1.375; }
+    .product-feats li::before { content:''; position:absolute; left:0; top:10px; width:6px; height:6px; border-radius:50%; }
 
-    /* ── Section shared ── */
-    .section { padding:clamp(80px,11vw,140px) 0; position:relative; overflow:hidden; }
-    .section-label { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:14px; }
-    .section-h2 { font-family:var(--serif); font-size:clamp(2rem,4.5vw,3.5rem); font-weight:400; line-height:1.15; color:var(--ink); margin-bottom:18px; }
-    .section-sub { font-size:1.0625rem; font-weight:300; color:var(--ink-soft); line-height:1.7; max-width:640px; }
+    /* ── SIGNALFLOW ── */
+    .sf-section { position:relative; overflow:hidden; padding:6rem 0; }
+    .sf-inner { max-width:768px; margin:0 auto; padding:0 clamp(24px,4vw,40px); position:relative; z-index:10; text-align:center; }
+    .sf-h2 { font-family:var(--fh); font-weight:400; font-size:clamp(36px,5vw,64px); line-height:1.08; letter-spacing:-.02em; margin-bottom:24px; }
+    .sf-sub { font-size:clamp(17px,2vw,20px); line-height:1.625; color:var(--ink-soft); margin-bottom:40px; max-width:640px; margin-left:auto; margin-right:auto; }
+    .sf-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:768px; margin:0 auto 40px; text-align:left; }
+    .sf-card { background:rgba(255,255,255,.45); border:1px solid rgba(42,31,74,.12); border-radius:16px; padding:20px; }
+    .sf-card-title { font-family:var(--fh); font-size:20px; font-weight:400; margin-bottom:8px; }
+    .sf-card-body { font-size:14px; line-height:1.625; color:var(--ink-soft); }
+    .sf-details { max-width:768px; margin:0 auto 40px; text-align:left; border-radius:16px; border:1px solid rgba(42,31,74,.12); background:rgba(255,255,255,.35); }
+    .sf-details summary { cursor:pointer; list-style:none; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:500; }
+    .sf-details-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 20px 20px; font-size:14px; color:var(--ink-soft); }
+    .sf-price-box { display:inline-block; padding:24px 40px; border-radius:24px; background:rgba(255,255,255,.45); border:1px solid rgba(42,31,74,.12); backdrop-filter:blur(8px); margin-bottom:32px; }
+    .sf-price-big { font-family:var(--fh); font-size:3rem; line-height:1; margin-bottom:4px; }
+    .sf-price-note { font-size:14px; color:var(--ink-soft); }
+    .btn-sf { display:inline-block; padding:16px 36px; border-radius:9999px; font-family:var(--fh); font-weight:500; font-size:15px; background:linear-gradient(135deg,var(--plume-coral),var(--plume-yellow)); color:var(--ink); text-decoration:none; }
+    .sf-trial-note { font-size:14px; color:var(--ink-soft); margin-top:16px; }
+    .sf-alert { display:inline-block; margin-bottom:24px; padding:12px 20px; border-radius:9999px; font-size:14px; background:rgba(239,59,90,.12); color:var(--plume-coral); border:1px solid rgba(239,59,90,.3); }
 
-    /* ── PROBLEM — now light lavender ── */
-    .problem { background:var(--lavender-light); }
-    .problem .section-label { color:var(--coral); }
-    .problem .section-h2 { color:var(--ink); }
-    .problem .section-sub { color:var(--ink-soft); }
+    /* ── PRICING ── */
+    .pricing-section { position:relative; overflow:hidden; padding:6rem 0; }
+    .pricing-inner { max-width:1280px; margin:0 auto; padding:0 clamp(24px,4vw,40px); position:relative; z-index:10; }
+    .pricing-header { text-align:center; margin-bottom:48px; }
+    .pricing-h2 { font-family:var(--fh); font-weight:400; font-size:clamp(36px,4.8vw,64px); line-height:1.1; letter-spacing:-.02em; margin-bottom:24px; }
+    .pricing-sub { font-size:clamp(16px,1.8vw,18px); line-height:1.625; color:var(--ink-soft); max-width:640px; margin:0 auto; }
+    .billing-toggle { display:flex; justify-content:center; margin-bottom:40px; }
+    .toggle-wrap { display:inline-flex; gap:4px; padding:4px; border-radius:9999px; border:1px solid rgba(42,31,74,.15); background:rgba(255,255,255,.5); }
+    .toggle-btn { padding:8px 20px; border-radius:9999px; border:none; cursor:pointer; font-family:var(--fh); font-size:14px; transition:all .2s; }
+    .toggle-btn.active { background:var(--ink); color:var(--plume-lavender-soft); }
+    .toggle-btn:not(.active) { background:transparent; color:var(--ink); }
+    .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:900px; margin:0 auto; }
+    .plan-card { border-radius:24px; padding:36px; text-align:center; border:1px solid rgba(42,31,74,.1); transition:transform .2s; }
+    .plan-card:hover { transform:translateY(-3px); }
+    .plan-card.featured { background:rgba(255,255,255,.28); border-color:rgba(42,31,74,.22); }
+    .plan-card:not(.featured) { background:rgba(255,255,255,.14); }
+    .plan-for { font-size:11px; text-transform:uppercase; letter-spacing:.15em; color:var(--ink-soft); margin-bottom:8px; }
+    .plan-name { font-family:var(--fh); font-size:26px; font-weight:400; margin-bottom:20px; }
+    .plan-price { font-family:var(--fh); font-size:3rem; line-height:1; margin-bottom:4px; }
+    .plan-price-unit { font-family:var(--fb); font-weight:300; font-size:16px; }
+    .plan-period { font-size:14px; color:var(--ink-soft); margin-bottom:20px; }
+    .plan-desc { font-size:14px; line-height:1.625; color:var(--ink-soft); margin-bottom:24px; }
+    .plan-cta { display:inline-block; padding:12px 24px; border-radius:9999px; font-size:14px; font-family:var(--fh); text-decoration:none; cursor:pointer; border:none; }
+    .plan-cta.fill { background:var(--ink); color:var(--plume-lavender-soft); }
+    .plan-cta.outline { background:transparent; color:var(--ink); border:1px solid rgba(42,31,74,.3); }
+    .plan-cta:hover { opacity:.88; }
+    .pricing-note { text-align:center; margin-top:40px; }
+    .pricing-note span { display:inline-block; padding:12px 28px; border-radius:9999px; font-size:15px; background:rgba(196,167,231,.18); border:1px solid rgba(42,31,74,.15); }
 
-    .frag-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border-radius:16px; overflow:hidden; margin-top:52px; }
-    .frag-cell { background:var(--canvas); padding:26px 28px; }
-    .frag-cell-label { font-size:1rem; color:var(--ink); margin-bottom:6px; font-weight:500; }
-    .frag-cell-tool { font-size:.8125rem; color:var(--ink-muted); }
-    .frag-arrow { font-family:var(--mono); font-size:10px; color:var(--coral); letter-spacing:.08em; display:block; margin-bottom:8px; opacity:.7; }
-    .frag-divider { grid-column:1/-1; height:1px; background:var(--border); }
-    .problem-quote { margin-top:52px; padding:36px 40px; background:#fff; border:1px solid var(--border); border-left:4px solid transparent; border-image:var(--logo-grad) 1; border-radius:0 20px 20px 0; }
-    .problem-quote p { font-family:var(--serif); font-size:clamp(1.25rem,2.5vw,1.875rem); font-weight:400; line-height:1.5; color:var(--ink); }
-    .problem-quote em { font-style:italic; background:var(--logo-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    /* ── IBC / VISION ── */
+    .ibc { position:relative; overflow:hidden; padding:7rem 0; }
+    .ibc-inner { max-width:768px; margin:0 auto; padding:0 clamp(24px,4vw,40px); text-align:center; position:relative; z-index:10; }
+    .ibc-eyebrow { font-size:12px; text-transform:uppercase; letter-spacing:.28em; color:var(--ink-soft); margin-bottom:28px; display:block; }
+    .ibc-h2 { font-family:var(--fh); font-weight:400; font-size:clamp(36px,5vw,72px); line-height:1.08; letter-spacing:-.02em; margin-bottom:32px; }
+    .ibc-body { font-size:clamp(17px,2vw,20px); line-height:1.625; color:var(--ink-soft); }
 
-    /* ── Platform ── */
-    .platform { background:var(--canvas); }
-    .platform-header { text-align:center; max-width:680px; margin:0 auto 72px; }
-    .products-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
-    .product-card { background:#fff; border:1px solid var(--border); border-radius:24px; padding:clamp(28px,4vw,48px); position:relative; overflow:hidden; transition:transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s; }
-    .product-card::before { content:''; position:absolute; inset:-60%; border-radius:50%; background:radial-gradient(ellipse, rgba(204,16,48,.1) 0%, rgba(120,216,232,.06) 60%, transparent 70%); opacity:0; transition:opacity .5s; pointer-events:none; }
-    .product-card:hover { transform:translateY(-6px); box-shadow:0 24px 64px -16px rgba(124,58,237,.12); }
-    .product-card:hover::before { opacity:1; }
-    .product-num { font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--ink-muted); margin-bottom:20px; }
-    .product-tag { display:inline-block; font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--purple); background:var(--purple-light); border-radius:4px; padding:3px 8px; margin-bottom:10px; }
-    .product-h3 { font-family:var(--serif); font-size:clamp(1.5rem,2.8vw,2.25rem); font-weight:400; color:var(--ink); margin-bottom:6px; }
-    .product-tagline { font-size:.875rem; font-weight:500; color:var(--purple); margin-bottom:16px; }
-    .product-desc { font-size:.9375rem; font-weight:300; color:var(--ink-soft); line-height:1.7; margin-bottom:24px; }
-    .product-features { list-style:none; display:flex; flex-direction:column; gap:8px; }
-    .product-features li { font-size:.875rem; color:var(--ink-soft); display:flex; align-items:flex-start; gap:8px; }
-    .product-features li::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--logo-grad); background-size:200%; flex-shrink:0; margin-top:7px; }
-
-    /* ── SignalFlow section ── */
-    .sf-section { background:var(--lavender-light); }
-    .sf-header { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; margin-bottom:56px; }
-    .sf-modules { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:40px; }
-    .sf-module { background:#fff; border:1px solid var(--border); border-radius:16px; padding:22px 24px; transition:border-color .25s, box-shadow .25s; }
-    .sf-module:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(124,58,237,.08); }
-    .sf-module-title { font-family:var(--serif); font-size:1.125rem; font-weight:400; color:var(--ink); margin-bottom:6px; }
-    .sf-module-desc { font-size:.8125rem; font-weight:300; color:var(--ink-muted); line-height:1.55; }
-    .sf-addon { background:#fff; border:1px solid var(--border); border-radius:20px; padding:32px 36px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
-    .sf-addon-price { font-family:var(--serif); font-size:2.25rem; font-weight:400; color:var(--purple); }
-    .sf-modules-pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; margin-bottom:32px; }
-    .sf-pill { font-size:12px; padding:5px 14px; border-radius:100px; background:rgba(124,58,237,.07); color:var(--purple); border:1px solid rgba(124,58,237,.15); }
-    .sf-cta-link { display:inline-flex; align-items:center; gap:6px; font-size:.875rem; color:var(--purple); text-decoration:none; font-weight:500; margin-top:8px; }
-    .sf-cta-link:hover { gap:10px; }
-
-    /* ── Pricing ── */
-    .pricing { background:var(--canvas); }
-    .pricing-header { text-align:center; max-width:600px; margin:0 auto 64px; }
-    .pricing-toggle { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:48px; }
-    .toggle-label { font-size:.875rem; color:var(--ink-soft); }
-    .toggle-btn { width:52px; height:28px; border-radius:14px; background:var(--purple); border:none; cursor:pointer; position:relative; transition:background .25s; }
-    .toggle-btn::after { content:''; position:absolute; width:22px; height:22px; border-radius:50%; background:#fff; top:3px; left:3px; transition:transform .25s; box-shadow:0 2px 4px rgba(0,0,0,.15); }
-    .toggle-btn.yearly::after { transform:translateX(24px); }
-    .save-badge { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:var(--coral); padding:3px 8px; border-radius:4px; }
-    .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
-    .price-card { background:#fff; border:1px solid var(--border); border-radius:24px; padding:36px 32px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s; }
-    .price-card.featured { border-color:var(--purple); box-shadow:0 8px 40px rgba(124,58,237,.1); }
-    .price-card:hover { transform:translateY(-4px); box-shadow:0 16px 48px rgba(124,58,237,.1); }
-    .price-card-label { font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:16px; }
-    .price-card-name { font-family:var(--serif); font-size:1.75rem; font-weight:400; color:var(--ink); margin-bottom:8px; }
-    .price-amount { font-family:var(--serif); font-size:3rem; font-weight:400; color:var(--purple); line-height:1; margin-bottom:6px; }
-    .price-amount span { font-size:1rem; color:var(--ink-muted); }
-    .price-desc { font-size:.875rem; font-weight:300; color:var(--ink-soft); line-height:1.6; margin-bottom:28px; flex:1; }
-    .price-trial { font-size:.8125rem; color:var(--ink-muted); margin-top:12px; }
-    .price-note { font-size:.75rem; text-align:center; color:var(--ink-muted); margin-top:32px; line-height:1.6; }
-
-    /* ── VISION — now light lavender ── */
-    .vision { background:var(--lavender-light); }
-    .vision .section-label { color:var(--coral); }
-    .vision .section-h2 { color:var(--ink); max-width:700px; }
-    .vision .section-sub { color:var(--ink-soft); }
-    .vision-inner { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
-    .ibc-badge { display:inline-block; margin-bottom:24px; font-family:var(--mono); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--coral); background:rgba(224,64,32,.06); border:1px solid rgba(224,64,32,.2); padding:5px 14px; border-radius:4px; }
-    .vision-quote { font-family:var(--serif); font-size:clamp(1.125rem,2.2vw,1.625rem); font-weight:400; line-height:1.55; color:var(--ink-soft); }
-    .vision-quote em { font-style:italic; background:var(--logo-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .vision-right { display:flex; flex-direction:column; gap:20px; }
-    .vision-chip { background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
-    .vision-chip-icon { font-size:20px; margin-bottom:10px; }
-    .vision-chip-title { font-family:var(--serif); font-size:1.125rem; color:var(--ink); margin-bottom:6px; }
-    .vision-chip-desc { font-size:.875rem; color:var(--ink-soft); line-height:1.6; }
-
-    /* ── Footer — light ── */
-    .footer { background:var(--lavender-light); padding:clamp(64px,8vw,100px) 0 44px; position:relative; }
-    .footer::before { content:''; position:absolute; top:0; left:6%; right:6%; height:1px; background:var(--logo-grad); opacity:.45; }
-    .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:48px; margin-bottom:64px; }
-    .footer-logo { display:inline-flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:16px; }
-    .footer-logo img { width:28px; height:28px; border-radius:7px; }
-    .footer-logo-text { font-family:var(--serif); font-size:1.4rem; font-weight:400; color:var(--ink); }
-    .footer-tagline { font-size:.9375rem; font-weight:300; color:var(--ink-muted); line-height:1.65; max-width:280px; margin-bottom:20px; }
-    .footer-est { font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:var(--ink-muted); }
-    .footer-col-title { font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:20px; }
-    .footer-links { list-style:none; display:flex; flex-direction:column; gap:12px; }
-    .footer-links a { font-size:.9375rem; font-weight:300; color:var(--ink-soft); text-decoration:none; transition:color .2s; }
+    /* ── FOOTER ── */
+    footer { padding:48px 0; border-top:1px solid rgba(42,31,74,.15); }
+    .footer-inner { max-width:1280px; margin:0 auto; padding:0 clamp(24px,4vw,40px); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:24px; }
+    .footer-brand { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+    .footer-brand img { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+    .footer-brand-name { font-family:var(--fh); font-size:1.5rem; color:var(--plume-purple); }
+    .footer-est { font-size:13px; color:var(--ink-soft); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:16px 28px; list-style:none; }
+    .footer-links a { font-size:14px; color:var(--ink-soft); text-decoration:none; transition:color .2s; }
     .footer-links a:hover { color:var(--ink); }
-    .footer-bottom { display:flex; justify-content:space-between; align-items:center; padding-top:24px; border-top:1px solid var(--border); flex-wrap:wrap; gap:16px; }
-    .footer-copy { font-size:.8125rem; color:var(--ink-muted); }
-    .footer-socials { display:flex; gap:16px; }
-    .social-link { font-size:.8125rem; color:var(--ink-muted); text-decoration:none; transition:color .2s; }
-    .social-link:hover { color:var(--ink); }
 
     /* ── Responsive ── */
-    @media(max-width:900px) { .sf-header { grid-template-columns:1fr; } .vision-inner { grid-template-columns:1fr; gap:48px; } .products-grid { grid-template-columns:1fr; } .pricing-grid { grid-template-columns:1fr; max-width:480px; margin:0 auto; } .footer-grid { grid-template-columns:1fr; } .frag-grid { grid-template-columns:1fr 1fr; } }
-    @media(max-width:768px) { .nav-links,.nav-ctas { display:none; } .hamburger { display:flex; } .sf-modules { grid-template-columns:1fr; } }
-    @media(max-width:560px) { .frag-grid { grid-template-columns:1fr; } }
+    @media(max-width:900px) {
+      .problem-cols { grid-template-columns:1fr; }
+      .product-row { grid-template-columns:1fr; gap:24px; }
+      .product-feats { grid-template-columns:1fr; }
+      .pricing-grid { grid-template-columns:1fr; max-width:420px; }
+      .sf-grid { grid-template-columns:1fr; }
+      .sf-details-grid { grid-template-columns:1fr; }
+    }
+    @media(max-width:768px) {
+      .nav-links { display:none; }
+      .hamburger-btn { display:block; }
+    }
 
-    /* Mobile nav */
-    .mobile-nav { display:none; position:fixed; inset:0; z-index:490; background:rgba(247,244,252,.97); backdrop-filter:blur(20px); flex-direction:column; align-items:center; justify-content:center; gap:28px; }
-    .mobile-nav.open { display:flex; }
-    .mobile-nav a { font-family:var(--serif); font-size:2rem; color:var(--ink); text-decoration:none; }
-    .mobile-nav-close { position:absolute; top:24px; right:24px; background:none; border:none; cursor:pointer; color:var(--ink); }
+    /* ── Mobile nav overlay ── */
+    .mob-nav { display:none; position:fixed; inset:0; z-index:200; background:rgba(232,226,244,.97); backdrop-filter:blur(20px); flex-direction:column; align-items:center; justify-content:center; gap:28px; }
+    .mob-nav.open { display:flex; }
+    .mob-nav a { font-family:var(--fh); font-size:2rem; color:var(--ink); text-decoration:none; }
+    .mob-close { position:absolute; top:24px; right:24px; background:none; border:none; cursor:pointer; font-size:28px; color:var(--ink); }
   </style>
 </head>
 <body>
 
 <!-- ═══ NAV ═══ -->
-<header class="nav" id="nav">
-  <div class="container">
-    <div class="nav-inner">
-      <a href="/" class="nav-logo" aria-label="Plume home">
-        <img src="/logo.svg" alt="Plume logo"/>
-        <span class="nav-logo-text">Plume</span>
-      </a>
-      <nav aria-label="Primary">
-        <ul class="nav-links">
-          <li><a href="#problem">The Problem</a></li>
-          <li><a href="#platform">Platform</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#vision">Vision</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
-      <div class="nav-ctas">
-        <a href="#" class="nav-signin">Sign in</a>
-        <a href="/signalflow.html" class="btn btn-purple nav-cta">Explore platform</a>
-      </div>
-      <button class="hamburger" id="menuBtn" aria-label="Open menu">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
-      </button>
+<nav class="topnav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/logo.svg" alt="Plume"/>
+      <span class="nav-logo-name">Plume<em>.</em></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#problem">The Problem</a></li>
+      <li><a href="#platform">Platform</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#vision">Vision</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-auth">
+      <a href="/auth?mode=signin" class="btn-nav btn-nav-ghost">Sign in</a>
+      <a href="/auth?mode=signup" class="btn-nav btn-nav-fill">Get started</a>
     </div>
+    <button class="hamburger-btn" id="menuBtn" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+    </button>
   </div>
-</header>
+</nav>
 
-<div class="mobile-nav" id="mobileNav">
-  <button class="mobile-nav-close" id="menuClose"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></button>
+<!-- Mobile nav -->
+<div class="mob-nav" id="mobNav">
+  <button class="mob-close" id="mobClose">×</button>
   <a href="#problem" onclick="closeMob()">The Problem</a>
   <a href="#platform" onclick="closeMob()">Platform</a>
   <a href="#pricing" onclick="closeMob()">Pricing</a>
   <a href="#vision" onclick="closeMob()">Vision</a>
-  <a href="/signalflow.html" class="btn btn-purple" onclick="closeMob()">Explore platform</a>
+  <a href="/auth?mode=signup" class="btn-hero-fill" onclick="closeMob()">Get started</a>
 </div>
 
 
 <!-- ═══ HERO ═══ -->
-<section class="hero" id="hero">
-  <div class="hero-blob hero-blob-1"></div>
-  <div class="hero-blob hero-blob-2"></div>
-  <div class="hero-blob hero-blob-3"></div>
-  <div class="container">
-    <div class="hero-content">
-      <div class="hero-eyebrow reveal">Intelligent Beauty Commerce</div>
-      <h1 class="hero-h1 reveal d1">Every side of beauty,<br><em>finally connected.</em></h1>
-      <p class="hero-sub reveal d2">Plume is a platform that connects aesthetic clinics, beauty brands, and beauty lovers commission-free — all powered by Plume SignalFlow.</p>
-      <div class="hero-ctas reveal d3">
-        <a href="#pricing" class="btn btn-purple">Become a founding partner</a>
-        <a href="#platform" class="btn btn-ghost">See how Plume works →</a>
-      </div>
+<section class="hero">
+  <!-- Blobs matching original -->
+  <div class="blob" style="top:-10%;right:-12%;width:880px;height:880px;background:radial-gradient(ellipse at 55% 28%,#ef3b5a 0%,transparent 55%),radial-gradient(ellipse at 72% 38%,#fbbf3a 0%,transparent 60%),radial-gradient(circle at 38% 62%,#fcd7b8 0%,transparent 55%);filter:blur(85px);opacity:.75;z-index:0;"></div>
+  <div class="blob" style="bottom:-15%;left:-10%;width:720px;height:720px;background:radial-gradient(circle at 35% 40%,#b9e4e1 0%,transparent 55%),radial-gradient(circle at 60% 65%,#d8d0f0 0%,transparent 60%);filter:blur(95px);opacity:.6;z-index:0;"></div>
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Plume — Intelligent Beauty Commerce</span>
+    <h1 class="hero-h1">
+      Every side of beauty, <em style="color:var(--plume-purple)">finally connected.</em>
+    </h1>
+    <p class="hero-sub">
+      Plume is a platform that connects aesthetic clinics, beauty brands, and beauty lovers commission-free — all powered by Plume SignalFlow.
+    </p>
+    <div class="hero-ctas">
+      <a href="/auth?mode=signup" class="btn-hero-fill">Become a founding partner</a>
+      <a href="#platform" class="btn-hero-link">See how Plume works →</a>
     </div>
-  </div>
-  <div class="hero-scroll" aria-hidden="true">
-    <span>Scroll</span>
-    <svg width="16" height="20" viewBox="0 0 16 20" fill="none"><path d="M8 3v14M3 13l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 </section>
 
 
-<!-- ═══ DISCOVER ═══ -->
-<section class="discover">
-  <div class="container">
-    <div class="discover-label reveal">Beauty Intelligence</div>
-    <h2 class="discover-h2 reveal d1">Discover beauty that actually works for you.</h2>
-    <a href="#platform" class="btn btn-purple reveal d2">Explore brands →</a>
+<!-- ═══ BEAUTY LOVERS STRIP ═══ -->
+<section class="strip">
+  <div class="strip-inner">
+    <h2 class="strip-h2">
+      Discover beauty that <em style="color:#ec4899">actually works</em> for you.
+    </h2>
+    <a href="/beauty" class="strip-link">Explore brands →</a>
   </div>
 </section>
 
 
 <!-- ═══ THE PROBLEM ═══ -->
-<section class="section problem" id="problem">
-  <div class="container">
-    <div class="section-label reveal">The Problem</div>
-    <h2 class="section-h2 reveal d1">The aesthetic industry<br>runs on fragments.</h2>
-    <p class="section-sub reveal d2">Bookings live on Fresha. Enquiries arrive through Instagram DMs. Stock is reordered by phone. Brand reps still cold-call. Loyalty lives in a notebook, if it lives anywhere.</p>
-    <div class="frag-grid reveal d3">
-      <div class="frag-cell"><span class="frag-arrow">BOOKINGS</span><div class="frag-cell-label">Clinic scheduling</div><div class="frag-cell-tool">Fresha / third-party</div></div>
-      <div class="frag-cell"><span class="frag-arrow">CLIENT ENQUIRIES</span><div class="frag-cell-label">New business</div><div class="frag-cell-tool">Instagram DMs</div></div>
-      <div class="frag-cell"><span class="frag-arrow">BRAND SOURCING</span><div class="frag-cell-label">Product discovery</div><div class="frag-cell-tool">Trade shows</div></div>
-      <div class="frag-divider"></div>
-      <div class="frag-cell"><span class="frag-arrow">REORDERING</span><div class="frag-cell-label">Stock management</div><div class="frag-cell-tool">Phone &amp; email</div></div>
-      <div class="frag-cell"><span class="frag-arrow">LOYALTY</span><div class="frag-cell-label">Client retention</div><div class="frag-cell-tool">Memory</div></div>
-      <div class="frag-cell"><span class="frag-arrow">SKIN ANALYSIS</span><div class="frag-cell-label">Treatment matching</div><div class="frag-cell-tool">A guess</div></div>
-    </div>
-    <div class="problem-quote reveal d4">
-      <p>Clinics, the brands they stock, and the clients they serve — all moving through different systems, none of them speaking to each other. The work is beautiful. The infrastructure isn't. <em>Plume is the first platform built to hold all of it, gently, in one place.</em></p>
+<section class="problem" id="problem">
+  <div class="blob" style="top:-10%;right:-12%;width:880px;height:880px;background:radial-gradient(ellipse at 55% 28%,#ef3b5a 0%,transparent 55%),radial-gradient(ellipse at 72% 38%,#fbbf3a 0%,transparent 60%),radial-gradient(circle at 38% 62%,#fcd7b8 0%,transparent 55%);filter:blur(85px);opacity:.55;z-index:0;"></div>
+  <div class="blob" style="bottom:-15%;left:-10%;width:720px;height:720px;background:radial-gradient(circle at 35% 40%,#b9e4e1 0%,transparent 55%),radial-gradient(circle at 60% 65%,#d8d0f0 0%,transparent 60%);filter:blur(95px);opacity:.5;z-index:0;"></div>
+  <div class="problem-inner">
+    <span class="section-eyebrow">The Problem</span>
+    <h2 class="problem-h2">
+      The aesthetic industry runs on <em style="color:var(--plume-coral)">fragments.</em>
+    </h2>
+    <div class="problem-cols">
+      <div class="problem-text">
+        <p>Bookings live on Fresha. Enquiries arrive through Instagram DMs. Stock is reordered by phone. Brand reps still cold-call. Loyalty lives in a notebook, if it lives anywhere.</p>
+        <p>Clinics, the brands they stock, and the clients they serve — all moving through different systems, none of them speaking to each other. The work is beautiful. The infrastructure isn't.</p>
+        <p>Plume is the first platform built to hold all of it, gently, in one place.</p>
+      </div>
+      <ul class="problem-list">
+        <li><span>Bookings</span>     <span class="problem-list-where">Fresha</span></li>
+        <li><span>Client enquiries</span><span class="problem-list-where">Instagram</span></li>
+        <li><span>Brand sourcing</span><span class="problem-list-where">Trade shows</span></li>
+        <li><span>Reordering</span>   <span class="problem-list-where">Phone &amp; email</span></li>
+        <li><span>Loyalty</span>      <span class="problem-list-where">Memory</span></li>
+        <li><span>Skin analysis</span><span class="problem-list-where">A guess</span></li>
+      </ul>
     </div>
   </div>
 </section>
 
 
-<!-- ═══ PLATFORM ═══ -->
-<section class="section platform" id="platform">
-  <div class="container">
-    <div class="platform-header reveal">
-      <div class="section-label">What we offer</div>
-      <h2 class="section-h2">One platform. Four products.</h2>
-      <p class="section-sub">Built for aesthetics — not salons, not dentists, not retrofits.</p>
+<!-- ═══ OFFER HEADER ═══ -->
+<section class="offer-hdr" id="platform">
+  <div class="blob" style="top:-10%;right:-12%;width:880px;height:880px;background:radial-gradient(ellipse at 55% 28%,#ef3b5a 0%,transparent 55%),radial-gradient(ellipse at 72% 38%,#fbbf3a 0%,transparent 60%),radial-gradient(circle at 38% 62%,#fcd7b8 0%,transparent 55%);filter:blur(85px);opacity:.55;z-index:0;"></div>
+  <div class="blob" style="bottom:-15%;left:-10%;width:720px;height:720px;background:radial-gradient(circle at 35% 40%,#b9e4e1 0%,transparent 55%),radial-gradient(circle at 60% 65%,#d8d0f0 0%,transparent 60%);filter:blur(95px);opacity:.5;z-index:0;"></div>
+  <div class="offer-inner">
+    <span class="section-eyebrow">What we offer</span>
+    <h2 class="offer-h2">
+      One platform. Four products.<br>
+      <em style="color:var(--plume-purple)">Built for aesthetics</em> — not salons, not dentists, not retrofits.
+    </h2>
+  </div>
+</section>
+
+
+<!-- ═══ PRODUCTS ═══ -->
+<section class="products">
+  <div class="w-max">
+    <div class="products-lede">
+      <h2>The Plume platform.</h2>
+      <p>Each product stands on its own. Together, they're the operating system for a modern aesthetic practice.</p>
     </div>
-    <p class="reveal" style="text-align:center;font-family:var(--serif);font-size:1.125rem;color:var(--ink-soft);margin-bottom:40px;font-style:italic;">Each product stands on its own. Together, they're the operating system for a modern aesthetic practice.</p>
-    <div class="products-grid">
-      <div class="product-card reveal d1">
-        <div class="product-num">01 — Operations</div>
-        <span class="product-tag">Plume Clinic</span>
-        <h3 class="product-h3">Clinic Management,<br><em style="font-style:italic">Reimagined</em></h3>
-        <p class="product-tagline">The operational core for aesthetic clinics.</p>
-        <p class="product-desc">Manage bookings, client records, and services in one place — built for aesthetics, not salons.</p>
-        <ul class="product-features">
-          <li>Smart appointment scheduling &amp; reminders</li>
-          <li>Client profile &amp; treatment history</li>
-          <li>Service and package management</li>
-          <li>Real-time availability and capacity tools</li>
+
+    <!-- 01 Clinic -->
+    <div class="product-row">
+      <div>
+        <p class="product-left-num">01 — Operations</p>
+        <h3 class="product-left-name">Plume <em style="color:var(--plume-purple)">Clinic</em></h3>
+        <p class="product-left-tag">Clinic Management, Reimagined</p>
+      </div>
+      <div>
+        <h4 class="product-hook">The operational core for aesthetic clinics.</h4>
+        <p class="product-body">Manage bookings, client records, and services in one place — built for aesthetics, not salons.</p>
+        <ul class="product-feats">
+          <li style="--dot:var(--plume-coral)"><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-coral)"></span>Smart appointment scheduling &amp; reminders</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-coral)"></span>Client profile &amp; treatment history</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-coral)"></span>Service and package management</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-coral)"></span>Real-time availability and capacity tools</li>
         </ul>
       </div>
-      <div class="product-card reveal d2">
-        <div class="product-num">02 — Commerce</div>
-        <span class="product-tag">Plume Beauty</span>
-        <h3 class="product-h3">The Brand<br><em style="font-style:italic">Commerce Layer</em></h3>
-        <p class="product-tagline">A curated marketplace, clinic to brand, direct.</p>
-        <p class="product-desc">No trade shows. No cold calls. No distributors taking margin. Just verified brands and the clinics that stock them, in one quiet exchange.</p>
-        <ul class="product-features">
-          <li>Discover verified indie and professional beauty brands</li>
-          <li>Direct brand-to-clinic purchasing</li>
-          <li>Product intelligence matched to clinic needs</li>
-          <li>Streamlined re-ordering and inventory visibility</li>
+    </div>
+
+    <!-- 02 Beauty -->
+    <div class="product-row">
+      <div>
+        <p class="product-left-num">02 — Commerce</p>
+        <h3 class="product-left-name">Plume <em style="color:var(--plume-purple)">Beauty</em></h3>
+        <p class="product-left-tag">The Brand Commerce Layer</p>
+      </div>
+      <div>
+        <h4 class="product-hook">A curated marketplace, clinic to brand, direct.</h4>
+        <p class="product-body">No trade shows. No cold calls. No distributors taking margin. Just verified brands and the clinics that stock them, in one quiet exchange.</p>
+        <ul class="product-feats">
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-yellow)"></span>Discover verified indie and professional beauty brands</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-yellow)"></span>Direct brand-to-clinic purchasing</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-yellow)"></span>Product intelligence matched to clinic needs</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-yellow)"></span>Streamlined re-ordering and inventory visibility</li>
         </ul>
       </div>
-      <div class="product-card reveal d3">
-        <div class="product-num">03 — Intelligence</div>
-        <span class="product-tag">Plume Lab</span>
-        <h3 class="product-h3">Skin Intelligence<br><em style="font-style:italic">&amp; Analysis</em></h3>
-        <p class="product-tagline">Every booking starts with data, not a guess.</p>
-        <p class="product-desc">AI-driven skin analysis that matches consumers to the right treatments and the right clinics — before the consultation begins.</p>
-        <ul class="product-features">
-          <li>AI skin profiling and analysis</li>
-          <li>Intelligent treatment matching</li>
-          <li>Product recommendations by skin type</li>
-          <li>Consumer data insights for clinics</li>
+    </div>
+
+    <!-- 03 Lab -->
+    <div class="product-row">
+      <div>
+        <p class="product-left-num">03 — Intelligence</p>
+        <h3 class="product-left-name">Plume <em style="color:var(--plume-purple)">Lab</em></h3>
+        <p class="product-left-tag">Skin Intelligence &amp; Analysis</p>
+      </div>
+      <div>
+        <h4 class="product-hook">Every booking starts with data, not a guess.</h4>
+        <p class="product-body">AI-driven skin analysis that matches consumers to the right treatments and the right clinics — before the consultation begins.</p>
+        <ul class="product-feats">
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-mint)"></span>AI skin profiling and analysis</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-mint)"></span>Intelligent treatment matching</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-mint)"></span>Product recommendations by skin type</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-mint)"></span>Consumer data insights for clinics</li>
         </ul>
       </div>
-      <div class="product-card reveal d4">
-        <div class="product-num">04 — Retention</div>
-        <span class="product-tag">Plume Loyalty</span>
-        <h3 class="product-h3">Retention Built In,<br><em style="font-style:italic">Not Bolted On</em></h3>
-        <p class="product-tagline">Loyalty that lives across bookings, brands, and referrals.</p>
-        <p class="product-desc">A retention infrastructure designed for aesthetic clinics — without a separate app, a separate login, or a separate spreadsheet.</p>
-        <ul class="product-features">
-          <li>Points and rewards across all touchpoints</li>
-          <li>Referral programs built into the platform</li>
-          <li>Milestone and VIP tier management</li>
-          <li>Cross-brand loyalty for multi-clinic groups</li>
+    </div>
+
+    <!-- 04 Loyalty -->
+    <div class="product-row">
+      <div>
+        <p class="product-left-num">04 — Retention</p>
+        <h3 class="product-left-name">Plume <em style="color:var(--plume-purple)">Loyalty</em></h3>
+        <p class="product-left-tag">Retention Built In, Not Bolted On</p>
+      </div>
+      <div>
+        <h4 class="product-hook">Loyalty that lives across bookings, brands, and referrals.</h4>
+        <p class="product-body">A retention infrastructure designed for aesthetic clinics — without a separate app, a separate login, or a separate spreadsheet.</p>
+        <ul class="product-feats">
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-peach)"></span>Points and rewards across all touchpoints</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-peach)"></span>Referral programs built into the platform</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-peach)"></span>Milestone and VIP tier management</li>
+          <li><span style="position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--plume-peach)"></span>Cross-brand loyalty for multi-clinic groups</li>
         </ul>
       </div>
     </div>
@@ -401,167 +409,178 @@
 
 
 <!-- ═══ SIGNALFLOW ═══ -->
-<section class="section sf-section" id="signalflow">
-  <div class="container">
-    <div class="sf-header">
-      <div>
-        <div class="section-label reveal">Plume SignalFlow · Skin + AI</div>
-        <h2 class="section-h2 reveal d1">Skin analysis, commerce insights, and performance data — <em style="font-style:italic;background:var(--logo-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">all powered by Plume AI.</em></h2>
-        <p class="section-sub reveal d2">SignalFlow turns every logged routine, clinic visit, and purchase into real-time intelligence to 10× your practice and beauty brand.</p>
-        <a href="/signalflow.html" class="sf-cta-link reveal d3">Open Signal Flow™ dashboard →</a>
-      </div>
-      <div class="reveal d3">
-        <div class="sf-modules">
-          <div class="sf-module"><div class="sf-module-title">Seasonal Intelligence</div><div class="sf-module-desc">Predictive demand by season, weather, and skincare cycle.</div></div>
-          <div class="sf-module"><div class="sf-module-title">Retention Intelligence</div><div class="sf-module-desc">Repurchase curves, churn signals, and lifetime value forecasts.</div></div>
-          <div class="sf-module"><div class="sf-module-title">Regional Performance</div><div class="sf-module-desc">City, country, climate, and channel-level benchmarks.</div></div>
-          <div class="sf-module"><div class="sf-module-title">Skin Intelligence</div><div class="sf-module-desc">Cohort outcomes, ingredient efficacy, and skin-type patterns.</div></div>
-        </div>
-      </div>
+<section class="sf-section" id="signalflow">
+  <div class="blob" style="top:10%;right:-100px;width:520px;height:520px;background:radial-gradient(circle,var(--plume-coral) 0%,var(--plume-yellow) 45%,transparent 70%);filter:blur(90px);opacity:.5;z-index:0;"></div>
+  <div class="blob" style="bottom:5%;left:-80px;width:380px;height:380px;background:radial-gradient(circle,var(--plume-mint) 0%,transparent 60%);filter:blur(80px);opacity:.55;z-index:0;"></div>
+  <div class="sf-inner">
+    <span class="section-eyebrow">Plume SignalFlow · Skin + AI</span>
+    <h2 class="sf-h2">
+      Skin analysis, commerce insights, and performance data —
+      <em style="color:var(--plume-purple)"> all powered by Plume AI.</em>
+    </h2>
+    <p class="sf-sub">
+      SignalFlow turns every logged routine, clinic visit, and purchase into real-time intelligence to 10× your practice and beauty brand. Choose a plan to unlock the full suite.
+    </p>
+
+    <div class="sf-grid">
+      <div class="sf-card"><h3 class="sf-card-title">Seasonal Intelligence</h3><p class="sf-card-body">Predictive demand by season, weather, and skincare cycle — know what to stock and promote before the curve hits.</p></div>
+      <div class="sf-card"><h3 class="sf-card-title">Retention Intelligence</h3><p class="sf-card-body">Repurchase curves, churn signals, and lifetime value forecasts so you stop guessing who'll come back.</p></div>
+      <div class="sf-card"><h3 class="sf-card-title">Regional Performance</h3><p class="sf-card-body">City, country, climate, and channel-level benchmarks — see where your brand or clinic over- and under-indexes.</p></div>
+      <div class="sf-card"><h3 class="sf-card-title">Skin Intelligence</h3><p class="sf-card-body">Cohort outcomes, ingredient efficacy, and skin-type response patterns drawn from real logged journeys.</p></div>
     </div>
-    <div class="reveal">
-      <div style="margin-bottom:12px;font-size:.875rem;color:var(--ink-soft);font-weight:500;">Explore Plume AI — every intelligence module</div>
-      <div class="sf-modules-pills">
-        <span class="sf-pill">Outcome Intelligence</span><span class="sf-pill">Treatment Intelligence</span><span class="sf-pill">Product Intelligence</span><span class="sf-pill">Trend Intelligence</span><span class="sf-pill">Consumer Intelligence</span><span class="sf-pill">Predictive Intelligence</span><span class="sf-pill">Skin Intelligence</span><span class="sf-pill">Regional Performance</span><span class="sf-pill">Retention Intelligence</span><span class="sf-pill">Seasonal Intelligence</span><span class="sf-pill">Signal Coverage</span>
+
+    <details class="sf-details">
+      <summary>Explore Plume AI — every intelligence module <span style="color:var(--plume-purple)">+</span></summary>
+      <div class="sf-details-grid">
+        <div><strong style="color:var(--ink)">Outcome Intelligence.</strong> How treatments + products combine to drive real skin results.</div>
+        <div><strong style="color:var(--ink)">Treatment Intelligence.</strong> Spacing, retention, and satisfaction patterns across clients.</div>
+        <div><strong style="color:var(--ink)">Product Intelligence.</strong> Repurchase rates, compatibility, and shelf performance.</div>
+        <div><strong style="color:var(--ink)">Trend Intelligence.</strong> What's rising, stable, or declining in your category.</div>
+        <div><strong style="color:var(--ink)">Consumer Intelligence.</strong> Shifts in skin goals, sentiment, and journey stage.</div>
+        <div><strong style="color:var(--ink)">Predictive Intelligence.</strong> Forecasts built from your own data — not guesses.</div>
+        <div><strong style="color:var(--ink)">Skin Intelligence.</strong> Profile, concerns, and progress over time.</div>
+        <div><strong style="color:var(--ink)">Regional Performance.</strong> City, country, climate, and channel benchmarks.</div>
+        <div><strong style="color:var(--ink)">Retention Intelligence.</strong> Churn risk, loyalty, and lifetime value forecasts.</div>
+        <div><strong style="color:var(--ink)">Seasonal Intelligence.</strong> Demand cycles tied to season, weather, and skin.</div>
+        <div><strong style="color:var(--ink)">Signal Coverage.</strong> How much real data backs every prediction you see.</div>
       </div>
+    </details>
+
+    <div class="sf-price-box">
+      <div class="sf-price-big">+$10<span style="font-weight:300;font-size:16px"> / month</span></div>
+      <p class="sf-price-note">Add-on for brands &amp; clinics · billed monthly after trial</p>
     </div>
-    <div class="sf-addon reveal">
-      <div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:8px;">Add-on for brands &amp; clinics · billed monthly after trial</div>
-        <div style="font-family:var(--serif);font-size:1.5rem;color:var(--ink);margin-bottom:4px;">Plume SignalFlow</div>
-        <div style="font-size:.875rem;color:var(--ink-soft);">Full suite — all 11 intelligence modules. Cancel anytime.</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-        <div class="sf-addon-price">+$10<span style="font-size:1rem;color:var(--ink-muted)">&thinsp;/ month</span></div>
-        <a href="#pricing" class="btn btn-purple">Start 30-day free trial</a>
-      </div>
+    <div>
+      <a href="/auth?mode=signup" class="btn-sf">Start 30-day free trial</a>
+      <p class="sf-trial-note">No charge for 30 days. Cancel anytime.</p>
     </div>
   </div>
 </section>
 
 
 <!-- ═══ PRICING ═══ -->
-<section class="section pricing" id="pricing">
-  <div class="container">
-    <div class="pricing-header reveal">
-      <div class="section-label">Plume subscription</div>
-      <h2 class="section-h2">Full access to every Plume product.</h2>
-      <p class="section-sub">Clinic, Beauty, Lab, and Loyalty — under one subscription. No hidden fees.</p>
+<section class="pricing-section" id="pricing">
+  <div class="blob" style="top:-10%;right:-12%;width:880px;height:880px;background:radial-gradient(ellipse at 55% 28%,#ef3b5a 0%,transparent 55%),radial-gradient(ellipse at 72% 38%,#fbbf3a 0%,transparent 60%),radial-gradient(circle at 38% 62%,#fcd7b8 0%,transparent 55%);filter:blur(85px);opacity:.55;z-index:0;"></div>
+  <div class="blob" style="bottom:-15%;left:-10%;width:720px;height:720px;background:radial-gradient(circle at 35% 40%,#b9e4e1 0%,transparent 55%),radial-gradient(circle at 60% 65%,#d8d0f0 0%,transparent 60%);filter:blur(95px);opacity:.5;z-index:0;"></div>
+  <div class="pricing-inner">
+    <div class="pricing-header">
+      <h2 class="pricing-h2">Plume <em style="color:var(--plume-purple)">subscription.</em></h2>
+      <p class="pricing-sub"><strong>Full access</strong> to every Plume product — Clinic, Beauty, Lab, and Loyalty — under one subscription. No hidden fees.</p>
     </div>
-    <div class="pricing-toggle reveal">
-      <span class="toggle-label">Monthly</span>
-      <button class="toggle-btn" id="billingToggle"></button>
-      <span class="toggle-label">Yearly</span>
-      <span class="save-badge">Save 10%</span>
+
+    <div class="billing-toggle">
+      <div class="toggle-wrap">
+        <button class="toggle-btn active" id="btnMonthly" onclick="setBilling('monthly')">Monthly</button>
+        <button class="toggle-btn" id="btnYearly" onclick="setBilling('yearly')">Yearly · Save 10%</button>
+      </div>
     </div>
+
     <div class="pricing-grid">
-      <div class="price-card featured reveal d1">
-        <div class="price-card-label">For Clinics</div>
-        <div class="price-card-name">Plume Pro</div>
-        <div class="price-amount" id="proPrice">$250<span>&thinsp;/ mo</span></div>
-        <p class="price-desc">Everything your clinic needs — scheduling, client records, brand ordering, AI skin analysis, and loyalty — in one calm, connected place.</p>
-        <a href="#" class="btn btn-purple" style="justify-content:center;">Start 30-day free trial</a>
-        <div class="price-trial">Billed monthly · No charge for 30 days.</div>
+      <!-- Pro -->
+      <div class="plan-card featured">
+        <p class="plan-for">For Clinics</p>
+        <h3 class="plan-name">Plume <em style="color:var(--plume-purple)">Pro</em></h3>
+        <div class="plan-price" id="price-pro">$250<span class="plan-price-unit"> / mo</span></div>
+        <p class="plan-period" id="period-pro">Billed monthly · 30-day free trial</p>
+        <p class="plan-desc">Everything your clinic needs — scheduling, client records, brand ordering, AI skin analysis, and loyalty — in one calm, connected place.</p>
+        <a href="https://buy.stripe.com/28E6oH087505gfR0zE73G01" id="cta-pro" class="plan-cta fill" target="_blank">Start 30-day free trial</a>
       </div>
-      <div class="price-card reveal d2">
-        <div class="price-card-label">For Brands</div>
-        <div class="price-card-name">Plume Brand</div>
-        <div class="price-amount" id="brandPrice">$99<span>&thinsp;/ mo</span></div>
-        <p class="price-desc">List your products, connect directly with clinics, and see exactly where your brand is loved — no distributors, no guesswork.</p>
-        <a href="#" class="btn btn-purple" style="justify-content:center;">Start 30-day free trial</a>
-        <div class="price-trial">Billed monthly · No charge for 30 days.</div>
+
+      <!-- Brand -->
+      <div class="plan-card">
+        <p class="plan-for">For Brands</p>
+        <h3 class="plan-name">Plume <em style="color:var(--plume-purple)">Brand</em></h3>
+        <div class="plan-price" id="price-brand">$99<span class="plan-price-unit"> / mo</span></div>
+        <p class="plan-period" id="period-brand">Billed monthly · 30-day free trial</p>
+        <p class="plan-desc">List your products, connect directly with clinics, and see exactly where your brand is loved — no distributors, no guesswork.</p>
+        <a href="https://buy.stripe.com/14AdR9dYX0JPaVx4PU73G00" id="cta-brand" class="plan-cta fill" target="_blank">Start 30-day free trial</a>
       </div>
-      <div class="price-card reveal d3">
-        <div class="price-card-label">For You</div>
-        <div class="price-card-name">Plume Beauty Lovers</div>
-        <div class="price-amount" style="color:var(--ink)">Free</div>
-        <p class="price-desc">Book your favourite clinic. Discover the brands behind your treatments. Let your skin tell you what it actually needs.</p>
-        <a href="#" class="btn btn-ghost" style="justify-content:center;">Sign Up Free</a>
-        <div class="price-trial">Always, completely, beautifully free.</div>
+
+      <!-- Free -->
+      <div class="plan-card">
+        <p class="plan-for">For You</p>
+        <h3 class="plan-name">Plume <em style="color:var(--plume-purple)">Beauty Lovers</em></h3>
+        <div class="plan-price">Free</div>
+        <p class="plan-period">Always, completely, beautifully free</p>
+        <p class="plan-desc">Book your favourite clinic. Discover the brands behind your treatments. Let your skin tell you what it actually needs. Your glow-up starts here.</p>
+        <a href="/auth?mode=signup" class="plan-cta outline">Sign Up Free</a>
       </div>
     </div>
-    <p class="price-note reveal">Every clinic and brand starts with a 30-day free trial. Cancel anytime.</p>
+
+    <div class="pricing-note">
+      <span>Every clinic and brand starts with a <strong>30-day free trial</strong>. Cancel anytime.</span>
+    </div>
   </div>
 </section>
 
 
-<!-- ═══ VISION ═══ -->
-<section class="section vision" id="vision">
-  <div class="container">
-    <div class="vision-inner">
-      <div>
-        <span class="ibc-badge reveal">A new category</span>
-        <h2 class="section-h2 reveal d1">We call it Intelligent Beauty Commerce.</h2>
-        <blockquote class="vision-quote reveal d2">
-          Until now, the aesthetic industry has been served by tools borrowed from salons, dentists, and generic retail — none of them designed for the way clinics, brands, and consumers actually move together. <em>Plume is the first platform purpose-built for that connection</em>, where every booking, every product, and every client is held in one intelligent layer we call IBC.
-        </blockquote>
-      </div>
-      <div class="vision-right reveal d3">
-        <div class="vision-chip"><div class="vision-chip-icon">🏥</div><div class="vision-chip-title">For Aesthetic Clinics</div><div class="vision-chip-desc">Scheduling, client records, brand ordering, AI analysis, and loyalty — from one screen.</div></div>
-        <div class="vision-chip"><div class="vision-chip-icon">🧴</div><div class="vision-chip-title">For Beauty Brands</div><div class="vision-chip-desc">Direct clinic relationships, real-time sell-through data, and intelligence on what your products actually do.</div></div>
-        <div class="vision-chip"><div class="vision-chip-icon">✦</div><div class="vision-chip-title">For Beauty Lovers</div><div class="vision-chip-desc">Your skin journey — every treatment, every product, every result — in one place that gets smarter over time.</div></div>
-      </div>
-    </div>
+<!-- ═══ IBC / VISION ═══ -->
+<section class="ibc" id="vision">
+  <div class="blob" style="top:50%;left:50%;transform:translate(-50%,-50%);width:760px;height:540px;background:radial-gradient(ellipse at 30% 40%,var(--plume-coral) 0%,var(--plume-yellow) 30%,transparent 60%),radial-gradient(ellipse at 70% 70%,var(--plume-mint) 0%,transparent 50%);filter:blur(90px);opacity:.55;z-index:0;"></div>
+  <div class="ibc-inner">
+    <span class="ibc-eyebrow">A new category</span>
+    <h2 class="ibc-h2">
+      We call it <em style="color:var(--plume-purple)">Intelligent Beauty Commerce.</em>
+    </h2>
+    <p class="ibc-body">
+      Until now, the aesthetic industry has been served by tools borrowed from salons, dentists, and generic retail — none of them designed for the way clinics, brands, and consumers actually move together. Plume is the first platform purpose-built for that connection, where every booking, every product, and every client is held in one intelligent layer we call IBC.
+    </p>
   </div>
 </section>
 
 
 <!-- ═══ FOOTER ═══ -->
-<footer class="footer" id="contact">
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <a href="/" class="footer-logo">
-          <img src="/logo.svg" alt="Plume"/>
-          <span class="footer-logo-text">Plume</span>
-        </a>
-        <p class="footer-tagline">Intelligent Beauty Commerce — connecting clinics, brands, and beauty lovers, commission-free.</p>
-        <div class="footer-est">Est. 2026 — Intelligent Beauty Commerce</div>
+<footer id="contact">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">
+        <img src="/logo.svg" alt="Plume"/>
+        <span class="footer-brand-name">Plume<em>.</em></span>
       </div>
-      <div>
-        <div class="footer-col-title">Platform</div>
-        <ul class="footer-links">
-          <li><a href="#platform">Plume Clinic</a></li>
-          <li><a href="#platform">Plume Beauty</a></li>
-          <li><a href="#platform">Plume Lab</a></li>
-          <li><a href="#platform">Plume Loyalty</a></li>
-          <li><a href="/signalflow.html">SignalFlow</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="footer-col-title">Legal</div>
-        <ul class="footer-links">
-          <li><a href="#">Terms</a></li>
-          <li><a href="#">Privacy</a></li>
-          <li><a href="#">Refunds</a></li>
-        </ul>
-      </div>
+      <p class="footer-est">Est. 2026 — Intelligent Beauty Commerce</p>
     </div>
-    <div class="footer-bottom">
-      <p class="footer-copy">© 2026 Plume Studios. All rights reserved.</p>
-      <div class="footer-socials">
-        <a href="mailto:plumestudioscreatives@gmail.com" class="social-link">plumestudioscreatives@gmail.com</a>
-        <a href="#" class="social-link">IG @plumestudioscreatives</a>
-        <a href="#" class="social-link">TikTok @plumepsc</a>
-      </div>
-    </div>
+    <ul class="footer-links">
+      <li><a href="mailto:plumestudioscreatives@gmail.com">plumestudioscreatives@gmail.com</a></li>
+      <li><a href="https://www.instagram.com/plumestudioscreatives/" target="_blank" rel="noreferrer">IG @plumestudioscreatives</a></li>
+      <li><a href="https://tiktok.com/@plumepsc" target="_blank" rel="noreferrer">TikTok @plumepsc</a></li>
+      <li><a href="/terms">Terms</a></li>
+      <li><a href="/privacy">Privacy</a></li>
+      <li><a href="/refunds">Refunds</a></li>
+    </ul>
   </div>
 </footer>
 
 
 <script>
-  const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40), {passive:true});
-  const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);} }), {threshold:.1,rootMargin:'0px 0px -40px 0px'});
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-  requestAnimationFrame(() => document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('visible')));
-  document.getElementById('menuBtn').addEventListener('click', () => { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; });
-  function closeMob() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
-  document.getElementById('menuClose').addEventListener('click', closeMob);
+  /* ── Mobile nav ── */
+  document.getElementById('menuBtn').addEventListener('click', () => { document.getElementById('mobNav').classList.add('open'); document.body.style.overflow='hidden'; });
+  function closeMob() { document.getElementById('mobNav').classList.remove('open'); document.body.style.overflow=''; }
+  document.getElementById('mobClose').addEventListener('click', closeMob);
   document.addEventListener('keydown', e => e.key==='Escape' && closeMob());
-  const toggle = document.getElementById('billingToggle');
-  let yearly = false;
-  toggle.addEventListener('click', () => { yearly=!yearly; toggle.classList.toggle('yearly',yearly); document.getElementById('proPrice').innerHTML=yearly?'$225<span>&thinsp;/ mo</span>':'$250<span>&thinsp;/ mo</span>'; document.getElementById('brandPrice').innerHTML=yearly?'$89<span>&thinsp;/ mo</span>':'$99<span>&thinsp;/ mo</span>'; });
+
+  /* ── Billing toggle ── */
+  const PRICES = {
+    monthly: {
+      pro:    { text:'$250<span class="plan-price-unit"> / mo</span>', period:'Billed monthly · 30-day free trial', url:'https://buy.stripe.com/28E6oH087505gfR0zE73G01' },
+      brand:  { text:'$99<span class="plan-price-unit"> / mo</span>',  period:'Billed monthly · 30-day free trial', url:'https://buy.stripe.com/14AdR9dYX0JPaVx4PU73G00' },
+    },
+    yearly: {
+      pro:    { text:'$2,700<span class="plan-price-unit"> / yr</span>', period:'Billed yearly · Save 10% · 30-day free trial', url:'https://buy.stripe.com/eVq3cv9IHfEJaVx4PU73G03' },
+      brand:  { text:'$1,069.20<span class="plan-price-unit"> / yr</span>', period:'Billed yearly · Save 10% · 30-day free trial', url:'https://buy.stripe.com/4gM8wPdYXgIN4x9equ73G02' },
+    },
+  };
+
+  function setBilling(cycle) {
+    document.getElementById('btnMonthly').classList.toggle('active', cycle==='monthly');
+    document.getElementById('btnYearly').classList.toggle('active', cycle==='yearly');
+    const d = PRICES[cycle];
+    document.getElementById('price-pro').innerHTML   = d.pro.text;
+    document.getElementById('period-pro').textContent = d.pro.period;
+    document.getElementById('cta-pro').href           = d.pro.url;
+    document.getElementById('price-brand').innerHTML  = d.brand.text;
+    document.getElementById('period-brand').textContent = d.brand.period;
+    document.getElementById('cta-brand').href          = d.brand.url;
+  }
 </script>
 </body>
 </html>
