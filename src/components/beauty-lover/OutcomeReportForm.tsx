@@ -1,366 +1,263 @@
 "use client";
 // components/beauty-lover/OutcomeReportForm.tsx
 // ----------------------------------------------------------------------------
-// Beauty lover input form — one submission = one outcome_reports row.
-// Wires to: POST /api/outcome-reports   (Express backend)
-//           or:  POST /api/outcome-report  (if you create a Next.js route)
+// The single source of real data. A beauty lover logs:
+//   Treatment booked  +  Product used after  ->  Results
+//   + the month/season they used it / had the treatment   (Seasonal)
+//   + the city/country they live in                        (Regional)
+// On submit it inserts one row into outcome_reports. RLS guarantees they can
+// only write their own row. That row updates every intelligence model.
 //
-// Props: treatments (from your DB), products (from your DB)
-// The form derives used_season from used_month automatically (northern hemisphere).
+// Plume design system:
+//   purple #7c3aed · pink #ec4899 · lavender surface
+//   Cormorant Garamond (display) · Source Sans 3 (body) · IBM Plex Mono (data)
+// Assumes Tailwind + the css variables in globals.css (see CURSOR_PROMPT.md).
 // ----------------------------------------------------------------------------
 import { useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-interface Treatment { id: string; name: string; }
-interface Product   { id: string; name: string; brand_name?: string; }
+type Option = { id: string; name: string };
 
-interface Props {
-  treatments:  Treatment[];
-  products:    Product[];
-  clinicId?:   string;
-  brandId?:    string;
-  apiBase?:    string;   // defaults to "" (same origin)
-  authToken?:  string;   // Supabase session token for auth header
-  onSuccess?:  () => void;
-}
-
-const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+const RESULT_TAGS = [
+  "hydration", "brightness", "firmness", "acne_reduction",
+  "even_tone", "reduced_redness", "texture", "glow", "fine_lines",
 ];
 
-const SEASON_FROM_MONTH: Record<number, string> = {
-  1:"winter", 2:"winter", 3:"spring", 4:"spring", 5:"spring",
-  6:"summer", 7:"summer", 8:"summer", 9:"autumn",10:"autumn",
-  11:"autumn",12:"winter",
-};
+const SEASONS = [
+  { key: "spring", label: "Spring", months: [3, 4, 5] },
+  { key: "summer", label: "Summer", months: [6, 7, 8] },
+  { key: "autumn", label: "Autumn", months: [9, 10, 11] },
+  { key: "winter", label: "Winter", months: [12, 1, 2] },
+] as const;
 
-const COMMON_TAGS = [
-  "barrier repair","post-treatment","sensitive skin","anti-aging","brightening",
-  "hydration","acne","pigmentation","texture","redness","pore minimising","SPF",
+const MONTH_NAMES = [
+  "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec",
 ];
-
-const C = {
-  bg:       "#f4f1fb",
-  surface:  "#ffffff",
-  border:   "#d9cce8",
-  purple:   "#7c3aed",
-  pink:     "#ec4899",
-  ink:      "#2a1f4a",
-  muted:    "#7d6fa0",
-  font:     "'Source Sans 3', system-ui, sans-serif",
-  display:  "'Cormorant Garamond', Georgia, serif",
-  mono:     "'IBM Plex Mono', monospace",
-};
-
-const inputStyle: React.CSSProperties = {
-  width:"100%", padding:"10px 14px", borderRadius:10,
-  border:`1px solid ${C.border}`, fontFamily:C.font, fontSize:14,
-  color:C.ink, background:C.surface, outline:"none",
-};
-
-const labelStyle: React.CSSProperties = {
-  display:"block", fontSize:11, letterSpacing:"0.1em",
-  textTransform:"uppercase", color:C.muted,
-  fontFamily:C.mono, marginBottom:6,
-};
 
 export default function OutcomeReportForm({
-  treatments, products, clinicId, brandId,
-  apiBase = "", authToken, onSuccess,
-}: Props) {
-  const [form, setForm] = useState({
-    treatment_name: "",
-    product_id:     "",
-    product_name:   "",
-    result_score:   "" as string | number,
-    used_month:     "" as string | number,
-    country:        "",
-    city:           "",
-    notes:          "",
-  });
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [saving,  setSaving]  = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
+  treatments,
+  products,
+}: {
+  treatments: (Option & { clinic_id: string })[];
+  products:   (Option & { brand_id: string })[];
+}) {
+  const supabase = createClientComponentClient();
 
-  const set = (field: string, value: unknown) =>
-    setForm(prev => ({ ...prev, [field]: value }));
+  const [treatmentId, setTreatmentId] = useState("");
+  const [productId,   setProductId]   = useState("");
+  const [rating,      setRating]      = useState(0);
+  const [tags,        setTags]        = useState<string[]>([]);
+  const [summary,     setSummary]     = useState("");
+  const [season,      setSeason]      = useState<string>("");
+  const [usedMonth,   setUsedMonth]   = useState<number | null>(null);
+  const [city,        setCity]        = useState("");
+  const [country,     setCountry]     = useState("");
+  const [status,      setStatus]      = useState<"idle" | "saving" | "done" | "error">("idle");
 
-  const toggleTag = (tag: string) =>
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
+  const toggleTag = (t: string) =>
+    setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.result_score || !form.used_month) {
-      setError("Please fill in result score and month used.");
-      return;
-    }
-
-    const month = Number(form.used_month);
-    setSaving(true);
-    setError(null);
-
-    try {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-
-      const res = await fetch(`${apiBase}/api/outcome-reports`, {
-        method:  "POST",
-        headers,
-        body: JSON.stringify({
-          clinic_id:      clinicId      || null,
-          brand_id:       brandId       || null,
-          treatment_name: form.treatment_name || null,
-          product_id:     form.product_id     || null,
-          product_name:   form.product_name   || null,
-          result_score:   Number(form.result_score),
-          used_month:     month,
-          used_season:    SEASON_FROM_MONTH[month] ?? null,
-          country:        form.country || null,
-          city:           form.city    || null,
-          tags:           selectedTags,
-          notes:          form.notes   || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `HTTP ${res.status}`);
-      }
-
-      setSuccess(true);
-      onSuccess?.();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
+  const pickMonth = (m: number) => {
+    setUsedMonth(m);
+    const s = SEASONS.find((s) => (s.months as readonly number[]).includes(m));
+    if (s) setSeason(s.key);
   };
 
-  if (success) {
+  async function submit() {
+    if (!rating || (!treatmentId && !productId)) return;
+    setStatus("saving");
+
+    const t = treatments.find((x) => x.id === treatmentId);
+    const p = products.find((x) => x.id === productId);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return setStatus("error");
+
+    const { error } = await supabase.from("outcome_reports").insert({
+      beauty_lover_id:  user.id,
+      treatment_id:     treatmentId || null,
+      clinic_id:        t?.clinic_id ?? null,
+      product_id:       productId || null,
+      brand_id:         p?.brand_id ?? null,
+      result_rating:    rating,
+      result_tags:      tags,
+      result_summary:   summary || null,
+      used_month:       usedMonth,
+      treatment_month:  usedMonth,
+      used_season:      season || null,
+      city:             city || null,
+      country:          country || null,
+    });
+
+    setStatus(error ? "error" : "done");
+  }
+
+  if (status === "done") {
     return (
-      <div style={{ background:C.bg, borderRadius:16, padding:32, textAlign:"center" }}>
-        <div style={{ fontSize:36, marginBottom:12 }}>✓</div>
-        <p style={{ fontFamily:C.display, fontSize:22, color:C.purple, marginBottom:8 }}>
-          Report submitted
+      <div className="rounded-2xl bg-[var(--plume-lavender,#f4f1fb)] p-8 text-center">
+        <h3 className="font-[Cormorant_Garamond] text-2xl text-[#7c3aed]">Signal received</h3>
+        <p className="mt-2 font-[Source_Sans_3] text-sm text-neutral-600">
+          Your outcome is now part of Plume&rsquo;s intelligence. Thank you for sharing.
         </p>
-        <p style={{ fontFamily:C.font, fontSize:14, color:C.muted }}>
-          Thank you — your outcome has been logged and will inform Signal Flow intelligence.
-        </p>
-        <button
-          onClick={() => { setSuccess(false); setForm({ treatment_name:"", product_id:"", product_name:"", result_score:"", used_month:"", country:"", city:"", notes:"" }); setSelectedTags([]); }}
-          style={{ marginTop:20, padding:"10px 24px", borderRadius:100, background:C.purple, color:"#fff", border:"none", cursor:"pointer", fontFamily:C.font, fontSize:14 }}
-        >
-          Log another
-        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ background:C.bg, borderRadius:20, padding:32, maxWidth:600 }}>
-      <div style={{ marginBottom:28 }}>
-        <p style={{ fontFamily:C.mono, fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:C.purple, marginBottom:6 }}>
-          Signal Flow · Beauty Lover Input
-        </p>
-        <h2 style={{ fontFamily:C.display, fontSize:28, fontWeight:400, color:C.ink, marginBottom:8 }}>
-          Log a treatment outcome
-        </h2>
-        <p style={{ fontFamily:C.font, fontSize:14, color:C.muted, lineHeight:1.6 }}>
-          Your real-world results — completely anonymous — help clinics and brands
-          understand what actually works for people like you.
-        </p>
-      </div>
+    <div className="mx-auto max-w-xl rounded-2xl bg-[var(--plume-lavender,#f4f1fb)] p-6 sm:p-8">
+      <h2 className="font-[Cormorant_Garamond] text-3xl text-[#7c3aed]">Share your outcome</h2>
+      <p className="mt-1 font-[Source_Sans_3] text-sm text-neutral-600">
+        Tell us what you booked, what you used, and how it went. Your input trains Plume&rsquo;s
+        Outcome Intelligence.
+      </p>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
-        {/* Treatment */}
-        <div>
-          <label style={labelStyle}>Treatment used</label>
-          {treatments.length > 0 ? (
-            <select
-              value={form.treatment_name}
-              onChange={e => set("treatment_name", e.target.value)}
-              style={{ ...inputStyle, appearance:"none" }}
-            >
-              <option value="">Select…</option>
-              {treatments.map(t => (
-                <option key={t.id} value={t.name}>{t.name}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              value={form.treatment_name}
-              onChange={e => set("treatment_name", e.target.value)}
-              placeholder="e.g. RF Microneedling"
-              style={inputStyle}
-            />
-          )}
-        </div>
+      {/* Treatment + Product */}
+      <Field label="Treatment you booked">
+        <Select value={treatmentId} onChange={setTreatmentId} options={treatments} placeholder="Select a treatment" />
+      </Field>
+      <Field label="Product you used after">
+        <Select value={productId} onChange={setProductId} options={products} placeholder="Select a product" />
+      </Field>
 
-        {/* Product */}
-        <div>
-          <label style={labelStyle}>Product used after</label>
-          {products.length > 0 ? (
-            <select
-              value={form.product_id}
-              onChange={e => {
-                const p = products.find(x => x.id === e.target.value);
-                set("product_id", e.target.value);
-                set("product_name", p?.name ?? "");
-              }}
-              style={{ ...inputStyle, appearance:"none" }}
-            >
-              <option value="">Select…</option>
-              {products.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.brand_name ? `${p.brand_name} — ` : ""}{p.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              value={form.product_name}
-              onChange={e => set("product_name", e.target.value)}
-              placeholder="e.g. Barrier Restore Complex"
-              style={inputStyle}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Result score */}
-      <div style={{ marginBottom:16 }}>
-        <label style={labelStyle}>Result score (1 = poor · 5 = excellent)</label>
-        <div style={{ display:"flex", gap:8 }}>
-          {[1,2,3,4,5].map(n => (
+      {/* Result rating */}
+      <Field label="Your result">
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               type="button"
-              onClick={() => set("result_score", n)}
-              style={{
-                flex:1, padding:"12px 0", borderRadius:10,
-                border:`1px solid ${Number(form.result_score)===n ? C.purple : C.border}`,
-                background: Number(form.result_score)===n ? `${C.purple}12` : C.surface,
-                color: Number(form.result_score)===n ? C.purple : C.muted,
-                fontFamily:C.mono, fontSize:16, fontWeight:600, cursor:"pointer",
-                transition:"all .15s",
-              }}
+              onClick={() => setRating(n)}
+              className={`h-10 w-10 rounded-full font-[IBM_Plex_Mono] text-sm transition
+                ${rating >= n ? "bg-[#ec4899] text-white" : "bg-white text-neutral-400"}`}
             >
               {n}
             </button>
           ))}
         </div>
-      </div>
+      </Field>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
-        {/* Month */}
-        <div>
-          <label style={labelStyle}>Month used</label>
-          <select
-            value={form.used_month}
-            onChange={e => set("used_month", e.target.value)}
-            required
-            style={{ ...inputStyle, appearance:"none" }}
-          >
-            <option value="">Select month…</option>
-            {MONTHS.map((m, i) => (
-              <option key={m} value={i + 1}>{m}</option>
-            ))}
-          </select>
-          {form.used_month && (
-            <p style={{ fontFamily:C.mono, fontSize:10, color:C.muted, marginTop:4 }}>
-              → {SEASON_FROM_MONTH[Number(form.used_month)]}
-            </p>
-          )}
+      {/* Result tags */}
+      <Field label="What improved">
+        <div className="flex flex-wrap gap-2">
+          {RESULT_TAGS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggleTag(t)}
+              className={`rounded-full px-3 py-1 text-xs font-[Source_Sans_3] capitalize transition
+                ${tags.includes(t) ? "bg-[#7c3aed] text-white" : "bg-white text-neutral-600"}`}
+            >
+              {t.replace(/_/g, " ")}
+            </button>
+          ))}
         </div>
+      </Field>
 
-        {/* Country */}
-        <div>
-          <label style={labelStyle}>Your country</label>
-          <input
-            value={form.country}
-            onChange={e => set("country", e.target.value)}
-            placeholder="e.g. United Kingdom"
-            style={inputStyle}
-          />
-        </div>
-      </div>
-
-      {/* City */}
-      <div style={{ marginBottom:16 }}>
-        <label style={labelStyle}>City (optional)</label>
-        <input
-          value={form.city}
-          onChange={e => set("city", e.target.value)}
-          placeholder="e.g. London"
-          style={inputStyle}
-        />
-      </div>
-
-      {/* Tags */}
-      <div style={{ marginBottom:16 }}>
-        <label style={labelStyle}>Skin concerns addressed</label>
-        <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginTop:4 }}>
-          {COMMON_TAGS.map(tag => {
-            const active = selectedTags.includes(tag);
-            return (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                style={{
-                  padding:"5px 12px", borderRadius:100, fontSize:12,
-                  border:`1px solid ${active ? C.purple : C.border}`,
-                  background: active ? `${C.purple}12` : C.surface,
-                  color: active ? C.purple : C.muted,
-                  fontFamily:C.font, cursor:"pointer", transition:"all .15s",
-                }}
-              >
-                {tag}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div style={{ marginBottom:24 }}>
-        <label style={labelStyle}>Notes (optional)</label>
+      {/* Optional summary */}
+      <Field label="Anything to add (optional)">
         <textarea
-          value={form.notes}
-          onChange={e => set("notes", e.target.value)}
-          placeholder="What worked? What didn't? Anything notable about the result."
-          rows={3}
-          style={{ ...inputStyle, resize:"vertical", lineHeight:1.6 }}
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          rows={2}
+          className="w-full rounded-xl border border-purple-100 bg-white p-3 font-[Source_Sans_3] text-sm outline-none focus:border-[#7c3aed]"
+          placeholder="My skin looked noticeably brighter after three weeks…"
         />
-      </div>
+      </Field>
 
-      {error && (
-        <p style={{ fontFamily:C.font, fontSize:13, color:"#ef4444", marginBottom:12 }}>
-          {error}
-        </p>
-      )}
+      {/* Seasonal — month picker grouped by season */}
+      <Field label="When did you use it / have the treatment?">
+        <div className="space-y-2">
+          {SEASONS.map((s) => (
+            <div key={s.key}>
+              <span className="font-[IBM_Plex_Mono] text-[10px] uppercase tracking-wider text-[#7c3aed]">
+                {s.label}
+              </span>
+              <div className="mt-1 flex gap-1">
+                {s.months.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => pickMonth(m)}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-[Source_Sans_3] transition
+                      ${usedMonth === m ? "bg-[#ec4899] text-white" : "bg-white text-neutral-500"}`}
+                  >
+                    {MONTH_NAMES[m - 1]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Field>
+
+      {/* Regional */}
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="City you live in">
+          <input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="w-full rounded-xl border border-purple-100 bg-white p-3 font-[Source_Sans_3] text-sm outline-none focus:border-[#7c3aed]"
+            placeholder="Lisbon"
+          />
+        </Field>
+        <Field label="Country">
+          <input
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-full rounded-xl border border-purple-100 bg-white p-3 font-[Source_Sans_3] text-sm outline-none focus:border-[#7c3aed]"
+            placeholder="Portugal"
+          />
+        </Field>
+      </div>
 
       <button
-        type="submit"
-        disabled={saving}
-        style={{
-          width:"100%", padding:"14px 0", borderRadius:100,
-          background: saving ? `${C.purple}55` : C.purple,
-          color:"#fff", border:"none",
-          fontFamily:C.font, fontSize:15, fontWeight:500,
-          cursor: saving ? "not-allowed" : "pointer",
-          transition:"opacity .2s",
-        }}
+        type="button"
+        onClick={submit}
+        disabled={status === "saving" || !rating || (!treatmentId && !productId)}
+        className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#ec4899] py-3 font-[Source_Sans_3] font-semibold text-white disabled:opacity-40"
       >
-        {saving ? "Submitting…" : "Submit outcome →"}
+        {status === "saving" ? "Sending signal…" : "Submit outcome"}
       </button>
 
-      <p style={{ fontFamily:C.mono, fontSize:10, color:C.muted, textAlign:"center", marginTop:12 }}>
-        Your identity is never shared. Only aggregated signals reach clinics and brands.
-      </p>
-    </form>
+      {status === "error" && (
+        <p className="mt-2 text-center text-xs text-red-500">
+          Something went wrong — please try again.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ── Presentational helpers ── */
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-5">
+      <label className="mb-1.5 block font-[Source_Sans_3] text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function Select({
+  value, onChange, options, placeholder,
+}: {
+  value:       string;
+  onChange:    (v: string) => void;
+  options:     Option[];
+  placeholder: string;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full rounded-xl border border-purple-100 bg-white p-3 font-[Source_Sans_3] text-sm outline-none focus:border-[#7c3aed]"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => (
+        <option key={o.id} value={o.id}>{o.name}</option>
+      ))}
+    </select>
   );
 }
