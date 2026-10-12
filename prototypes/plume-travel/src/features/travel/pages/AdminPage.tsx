@@ -6,7 +6,7 @@ import { TREATMENT_LABEL } from "../lib/labels";
 import { dateLabel, money, priceLabel } from "../lib/format";
 import { useTravel } from "../state/store";
 import { Empty, Field, Gate, Modal, Switch } from "../components/ui";
-import { NewPostForm } from "./BoardPage";
+import { BriefForm } from "./board/Brief";
 
 export function AdminPage() {
   const t = useTravel();
@@ -119,7 +119,7 @@ export function AdminPage() {
           <p className="tv-muted text-[16px]">Each business has a travel_plan value, so a paid plan can be switched on later without a rebuild.</p>
         </section>
       </div>
-      {posting && <Modal open onClose={() => setPosting(false)} title="Post on behalf of a business" wide><NewPostForm admin asBusiness="maison-lune" onDone={() => setPosting(false)} /></Modal>}
+      {posting && <Modal open onClose={() => setPosting(false)} title="Post on behalf of a business" wide><BriefForm admin onDone={() => setPosting(false)} /></Modal>}
     </div>
   );
 }

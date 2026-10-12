@@ -2,26 +2,26 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
 import { HOSTS } from "../data/seed";
-import { PLATFORM_APPLICATION_FEE_PERCENT, TODAY, WAITLIST_OFFER_HOURS } from "../config";
+import { LIVE_OFFER_MINUTES, NOW, PLATFORM_APPLICATION_FEE_PERCENT, TODAY, WAITLIST_OFFER_HOURS, type Currency } from "../config";
 import { ACCESS, ctaLabel } from "../lib/labels";
-import { addDays, dateLabel, localDate, money, priceLabel, slotTime, stripeFee, timeRange } from "../lib/format";
+import { addDays, dateLabel, isLive, localDate, money, priceLabel, slotTime, stripeFee, timeRange } from "../lib/format";
 import { qrMatrix } from "../lib/qr";
 import type { Booking, Experience } from "../types";
 import { useTravel } from "../state/store";
 import { Field, Modal } from "./ui";
 
-// ---------------------------------------------------------------- save to itinerary
+// ---------------------------------------------------------------- save to an itinerary
 export function useSaveFlow() {
   const t = useTravel();
   const navigate = useNavigate();
   const [target, setTarget] = useState<Experience | null>(null);
-  const goItinerary = () => navigate({ to: "/travel/itinerary" });
+  const goTrips = () => navigate({ to: "/travel/itinerary" });
   const toggle = (e: Experience) => {
     const booked = t.bookingFor(e.id);
-    if (booked) { t.toast("This one is booked. You can manage it from your itinerary.", { label: "Open", run: goItinerary }); return; }
+    if (booked) { t.toast("This one is booked. You can manage it from your itinerary.", { label: "Open", run: goTrips }); return; }
     if (t.isSaved(e.id)) { t.unsave(e.id); t.toast("Removed from your itinerary"); return; }
     const name = t.saveTo(e.id);
-    if (name) t.toast(`Saved to ${name}`, { label: "View", run: goItinerary });
+    if (name) t.toast(`Saved to ${name}`, { label: "View", run: goTrips });
     else setTarget(e);
   };
   const dialog = target ? <SaveDialog e={target} onClose={() => setTarget(null)} /> : null;
@@ -32,7 +32,7 @@ function SaveDialog({ e, onClose }: { e: Experience; onClose: () => void }) {
   const t = useTravel();
   const navigate = useNavigate();
   const start = e.recurring ? TODAY : localDate(e.startsAt, e.timezone);
-  const [choice, setChoice] = useState<string>(t.state.itineraries.find((i) => i.city === e.city)?.id ?? "new");
+  const [choice, setChoice] = useState<string>(t.state.trips.find((i) => i.city === e.city)?.id ?? "new");
   const [name, setName] = useState(`My ${e.city} trip`);
   const [from, setFrom] = useState(start);
   const [to, setTo] = useState(addDays(start, 3));
@@ -42,7 +42,7 @@ function SaveDialog({ e, onClose }: { e: Experience; onClose: () => void }) {
     if (choice === "new") {
       if (!name.trim()) { setErr("Give your itinerary a name."); return; }
       if (to < from) { setErr("The end date is before the start date."); return; }
-      t.createItinerary(name.trim(), e.city, from, to, e.id);
+      t.createTrip(name.trim(), e.city, from, to, [e.id]);
       t.toast(`Saved to ${name.trim()}`, { label: "View", run: () => navigate({ to: "/travel/itinerary" }) });
     } else {
       const n = t.saveTo(e.id, choice);
@@ -56,7 +56,7 @@ function SaveDialog({ e, onClose }: { e: Experience; onClose: () => void }) {
       <form className="mt-4 grid gap-3" onSubmit={submit} noValidate>
         <fieldset className="grid gap-1.5">
           <legend className="sr-only">Choose an itinerary</legend>
-          {t.state.itineraries.map((i) => (
+          {t.state.trips.map((i) => (
             <label key={i.id} className="tv-check rounded-[14px] border border-tv-line bg-tv-surface px-4 py-3">
               <input type="radio" name="it" checked={choice === i.id} onChange={() => setChoice(i.id)} />
               <span><b>{i.name}</b><span className="tv-muted tv-small block">{i.city}, {i.items.length} {i.items.length === 1 ? "item" : "items"}</span></span>
@@ -96,10 +96,11 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
   const [note, setNote] = useState("");
   const [card, setCard] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<{ booking: Booking; itinerary: string | null } | null>(null);
+  const [result, setResult] = useState<{ booking: Booking; trip: string | null } | null>(null);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  const openSlots = e.slots?.filter((s) => !isLive(e) || Date.parse(s.startsAt) + 3_600_000 > Date.parse(NOW));
   const slot = e.slots?.find((s) => s.id === slotId) ?? null;
   const slotFull = slot ? slot.booked >= slot.capacity : false;
   const full = e.placesLeft === 0 || slotFull;
@@ -119,7 +120,7 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
     if (!validate()) return;
     if (full) {
       const b = t.joinWaitlist(e.id, slotId, consent);
-      setResult({ booking: b, itinerary: null }); setStep("done"); return;
+      setResult({ booking: b, trip: null }); setStep("done"); return;
     }
     if (e.accessType === "paid") { setStep("pay"); return; }
     setResult(t.book(e.id, { slotId, plusOne, consent, note: note.trim() || undefined })); setStep("done");
@@ -148,11 +149,11 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
             <fieldset>
               <legend className="mb-2 font-bold">Choose an entry time</legend>
               <div className="flex flex-wrap gap-2">
-                {e.slots.map((s) => {
+                {(openSlots ?? []).map((s) => {
                   const left = s.capacity - s.booked;
                   return (
                     <button key={s.id} type="button" className="tv-chip" aria-pressed={slotId === s.id} onClick={() => { setSlotId(s.id); setErrors({}); }}>
-                      {e.recurring ? "" : dateLabel({ startsAt: s.startsAt, endsAt: s.startsAt, timezone: e.timezone }).replace(/^\w+, /, "") + ", "}{slotTime(s.startsAt, e.timezone)}
+                      {e.recurring || isLive(e) ? "" : dateLabel({ startsAt: s.startsAt, endsAt: s.startsAt, timezone: e.timezone }).replace(/^\w+, /, "") + ", "}{slotTime(s.startsAt, e.timezone)}
                       <span className="tv-muted text-[15px]">{left <= 0 ? "full" : `${left} left`}</span>
                     </button>
                   );
@@ -204,12 +205,12 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
         </form>
       )}
 
-      {step === "done" && result && <BookingDone e={e} b={result.booking} itinerary={result.itinerary} onClose={onClose} />}
+      {step === "done" && result && <BookingDone e={e} b={result.booking} trip={result.trip} onClose={onClose} />}
     </Modal>
   );
 }
 
-function BookingDone({ e, b, itinerary, onClose }: { e: Experience; b: Booking; itinerary: string | null; onClose: () => void }) {
+function BookingDone({ e, b, trip, onClose }: { e: Experience; b: Booking; trip: string | null; onClose: () => void }) {
   const host = HOSTS[e.hostId];
   const save = useSaveFlow();
   const heading = b.status === "waitlisted" ? `You're number ${b.waitlistPosition} on the waitlist`
@@ -224,15 +225,15 @@ function BookingDone({ e, b, itinerary, onClose }: { e: Experience; b: Booking; 
             <p className="font-bold">{e.title}</p>
             <p className="tv-muted tv-small">{dateLabel(e)}{b.slotId ? `, entry at ${slotTime(e.slots!.find((s) => s.id === b.slotId)!.startsAt, e.timezone)}` : `, ${timeRange(e)}`}</p>
             <p className="tv-small mt-1">Ticket {b.code}{b.plusOne ? ", plus one" : ""}{b.amountPaid ? `, paid ${money(b.amountPaid, e.currency)}` : ""}</p>
-            <p className="tv-muted tv-small mt-2">{itinerary ? `Added to ${itinerary}.` : "Not in an itinerary yet."} The host scans this at the door.</p>
+            <p className="tv-muted tv-small mt-2">{trip ? `Added to ${trip}.` : "Not in an itinerary yet."} The host scans this at the door.</p>
           </div>
         </div>
       )}
-      {b.status === "waitlisted" && <p>If a place opens, we'll hold it for you for {WAITLIST_OFFER_HOURS} hours and let you know by email and in Plume. After that it goes to the next person.</p>}
+      {b.status === "waitlisted" && <p>If a place opens, we'll hold it for you for {isLive(e) ? `${LIVE_OFFER_MINUTES} minutes` : `${WAITLIST_OFFER_HOURS} hours`} and let you know by email and in Plume. After that it goes to the next person.</p>}
       {b.status === "applied" && <p>{host.name} {e.accessType === "invite" ? "decides who's invited" : "reviews applications"} and replies by email. It's saved in your itinerary meanwhile.</p>}
       <div className="flex flex-wrap gap-2">
         <Link to="/travel/e/$experienceId/room" params={{ experienceId: e.id }} className="tv-btn tv-btn-soft" onClick={onClose}>Open the event room</Link>
-        {!itinerary && b.status === "booked" ? <button className="tv-btn tv-btn-alt" onClick={() => save.choose(e)}>Add to an itinerary</button>
+        {!trip && b.status === "booked" ? <button className="tv-btn tv-btn-alt" onClick={() => save.choose(e)}>Add to an itinerary</button>
           : <Link to="/travel/itinerary" className="tv-btn tv-btn-alt" onClick={onClose}>See my itinerary</Link>}
         <button className="tv-btn" onClick={onClose}>Done</button>
       </div>
@@ -241,7 +242,7 @@ function BookingDone({ e, b, itinerary, onClose }: { e: Experience; b: Booking; 
   );
 }
 
-export function QR({ code, size = 160 }: { code: string; size?: number }) {
+export function QR({ code, size = 160, caption = true }: { code: string; size?: number; caption?: boolean }) {
   const m = qrMatrix(code);
   const n = m.length;
   return (
@@ -250,7 +251,7 @@ export function QR({ code, size = 160 }: { code: string; size?: number }) {
         <rect x="-2" y="-2" width={n + 4} height={n + 4} fill="#FFFFFF" />
         {m.flatMap((row, y) => row.map((on, x) => (on ? <rect key={`${x}-${y}`} x={x} y={y} width="1.02" height="1.02" fill="#2E2440" /> : null)))}
       </svg>
-      <figcaption className="tv-muted mt-1 text-center text-[15px]">Sample code</figcaption>
+      {caption && <figcaption className="tv-muted mt-1 text-center text-[15px]">Sample code</figcaption>}
     </figure>
   );
 }
@@ -288,7 +289,7 @@ export function TicketDialog({ booking, onClose }: { booking: Booking; onClose: 
 }
 
 /** Host payout preview: commission-free, only Stripe's processing fee. */
-export function PayoutPreview({ price, currency }: { price: number; currency: "EUR" | "USD" }) {
+export function PayoutPreview({ price, currency }: { price: number; currency: Currency }) {
   const fee = stripeFee(price, currency);
   const platform = (price * PLATFORM_APPLICATION_FEE_PERCENT) / 100;
   return (

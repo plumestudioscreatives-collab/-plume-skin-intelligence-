@@ -1,5 +1,4 @@
-import type { AccessType, Category, Experience, TreatmentType } from "../types";
-import type { Feel } from "../state/store";
+import type { AccessType, Category, DealType, Energy, Experience, TreatmentType } from "../types";
 import { priceLabel } from "./format";
 
 export const CATEGORY_LABEL: Record<Category, string> = {
@@ -38,20 +37,36 @@ export function ctaLabel(e: Experience, full: boolean) {
   }
 }
 
-export const FEELS: { value: Feel; label: string }[] = [
-  { value: "quiet", label: "Quiet" }, { value: "lively", label: "Lively" }, { value: "nofrag", label: "Fragrance-free" },
-  { value: "small", label: "Small group" }, { value: "notouch", label: "No touch treatments" },
+/** Atmosphere: the explicit "how should it feel" control. */
+export type Atmosphere = "any" | Energy;
+export const ATMOSPHERES: { value: Atmosphere; label: string }[] = [
+  { value: "any", label: "Any atmosphere" }, { value: "Quiet", label: "Quiet" }, { value: "Social", label: "Social" },
+  { value: "Reflective", label: "Reflective" }, { value: "Lively", label: "Lively" },
 ];
 
-export function matchesFeel(e: Experience, f: Feel) {
+/** Comfort preferences shown alongside Atmosphere. */
+export type Pref = "nofrag" | "small" | "notouch";
+export const PREFS: { value: Pref; label: string }[] = [
+  { value: "nofrag", label: "Fragrance-free" }, { value: "small", label: "Small group" }, { value: "notouch", label: "No touch" },
+];
+
+export function matchesPref(e: Experience, p: Pref) {
   const s = e.sensory;
-  if (f === "quiet") return s.energy === "Quiet" || s.energy === "Reflective";
-  if (f === "lively") return s.energy === "Lively";
-  if (f === "nofrag") return s.fragrance === "None";
-  if (f === "small") return s.smallGroup;
+  if (p === "nofrag") return s.fragrance === "None";
+  if (p === "small") return s.group === "Small";
   return s.touch === "None" || s.touch === "Consultations only";
 }
 
 export const TREATMENT_LABEL: Record<TreatmentType, string> = {
   consultation: "Consultation", facial: "Facial", massage: "Massage", chemical_peel: "Chemical peel", laser: "Laser or energy device", injectable: "Injectable", prescription: "Prescription treatment",
+};
+
+export const DEALS: DealType[] = ["Paid fee", "Product exchange", "Revenue share", "Co-funded", "Co-host", "Other"];
+export const DEAL_HINT: Record<DealType, string> = {
+  "Paid fee": "A cash fee. Say the budget and currency.",
+  "Product exchange": "No cash. Say what's exchanged and its value.",
+  "Revenue share": "A share of sales. Say the percentage and what it covers.",
+  "Co-funded": "Both partners pay in. Say who covers what.",
+  "Co-host": "Each partner brings their part. Say who covers what.",
+  "Other": "Describe the arrangement in full.",
 };

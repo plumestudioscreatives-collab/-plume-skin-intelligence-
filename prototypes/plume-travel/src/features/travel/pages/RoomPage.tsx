@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
 import { HOSTS, ME, MY_BUSINESS } from "../data/seed";
@@ -18,13 +18,17 @@ export function RoomPage() {
   const [kind, setKind] = useState<"question" | "intro" | "photo">("question");
   const [text, setText] = useState("");
   const [err, setErr] = useState("");
+  const joinedNow = !!e && t.state.roomsJoined.includes(e.id);
+  const postCount = e ? t.state.roomPosts.filter((p) => p.experienceId === e.id).length : 0;
+  useEffect(() => { if (e && joinedNow) t.markRoomSeen(e.id); }, [e?.id, joinedNow, postCount]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!e) return <NotFound />;
   const host = HOSTS[e.hostId];
   const pref = t.state.roomPrefs[e.id] ?? { showInAttendeeList: false, wantsToMeet: false };
   const ended = isPast(e) || e.status === "ended";
   const mine = t.bookingFor(e.id);
+  const joined = t.state.roomsJoined.includes(e.id);
   const isHost = t.state.role === "host" && (e.hostId === MY_BUSINESS || e.coHostId === MY_BUSINESS);
-  const canPost = isHost || !!mine;
+  const canPost = isHost || !!mine || joined;
   const posts = t.state.roomPosts.filter((p) => p.experienceId === e.id);
   const shown = [...(pref.showInAttendeeList ? [ME.name.split(" ")[0] + " (you)"] : []), ...SAMPLE_SHOWN];
   const meeting = posts.filter((p) => p.kind === "intro").map((p) => p.author);
@@ -39,13 +43,19 @@ export function RoomPage() {
 
   return (
     <div className="grid gap-7">
-      <nav className="tv-small tv-muted" aria-label="Breadcrumb"><Link to="/travel/e/$experienceId" params={{ experienceId: e.id }} className="hover:underline">{e.title}</Link> / Event room</nav>
+      <nav className="tv-small tv-muted" aria-label="Breadcrumb"><Link to="/travel/rooms" className="hover:underline">Rooms</Link> / <Link to="/travel/e/$experienceId" params={{ experienceId: e.id }} className="hover:underline">{e.title}</Link></nav>
       <header className="grid items-center gap-5 sm:grid-cols-[120px_1fr]">
         <Art palette={e.palette} className="aspect-square max-sm:hidden" />
         <div>
-          <p className="tv-italic-label">Event room in Plume Community</p>
+          <p className="tv-italic-label">Room in Plume Community</p>
           <h1 className="text-[44px] sm:text-[54px]">{e.title}</h1>
-          <p className="tv-muted">{dateLabel(e)}, {timeRange(e)}. {plural(e.roomMembers, "member")}.</p>
+          <p className="tv-muted">{dateLabel(e)}, {timeRange(e)}. {plural(e.roomMembers + (joined ? 1 : 0), "member")}.</p>
+          {!isHost && (
+            <button type="button" className={joined ? "tv-btn tv-btn-alt tv-btn-sm mt-3" : "tv-btn tv-btn-sm mt-3"} aria-pressed={joined}
+              onClick={() => { if (joined) { t.leaveRoom(e.id); t.toast("You left the Room"); } else { t.joinRoom(e.id); t.toast("Joined. It's in your Rooms."); } }}>
+              {joined ? "Leave the Room" : "Join the Room"}
+            </button>
+          )}
         </div>
       </header>
 
@@ -68,7 +78,7 @@ export function RoomPage() {
               <div><button className="tv-btn" type="submit">{isHost ? "Send update" : "Post"}</button></div>
             </form>
           ) : (
-            <p className="tv-panel">You can read the room. Book or RSVP to post questions and introductions.</p>
+            <p className="tv-panel">You can read the Room. Join it to post questions and introductions.</p>
           )}
 
           <ol className="grid gap-3" aria-label="Room posts">

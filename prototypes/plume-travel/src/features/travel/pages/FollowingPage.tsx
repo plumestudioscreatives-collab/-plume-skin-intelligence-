@@ -1,11 +1,14 @@
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { CITIES, HOSTS } from "../data/seed";
-import { priceLabel } from "../lib/format";
+import { HOSTS } from "../data/seed";
+import { placeLabel } from "../data/places";
+import { priceLabel, rangeLabel, TIME_LABEL } from "../lib/format";
 import { cn } from "../lib/cn";
 import type { Follow } from "../types";
 import { useTravel } from "../state/store";
 import { Empty, HostMark, Switch } from "../components/ui";
+import { LocationSearch } from "../components/LocationSearch";
+
+const KIND_WORD: Record<Follow["targetType"], string> = { city: "city", area: "neighborhood", country: "country", continent: "continent", host: "host" };
 
 function FollowRow({ f }: { f: Follow }) {
   const t = useTravel();
@@ -17,7 +20,7 @@ function FollowRow({ f }: { f: Follow }) {
         {host && <HostMark host={host} size={40} />}
         <div>
           <p className="font-bold">{title}</p>
-          <p className="tv-muted text-[16px]">{host ? `Tell me when ${host.name} hosts ${f.city ? `in ${f.city}` : "anywhere"}` : `Tell me about new experiences in ${f.target}`}</p>
+          <p className="tv-muted text-[16px]">{host ? `Tell me when ${host.name} hosts ${f.city ? `in ${f.city}` : "anywhere"}` : `New experiences in this ${KIND_WORD[f.targetType]}`}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-4">
@@ -31,9 +34,8 @@ function FollowRow({ f }: { f: Follow }) {
 
 export function FollowingPage() {
   const t = useTravel();
-  const [city, setCity] = useState("Lisbon");
   const unread = t.state.notifications.filter((n) => !n.read).length;
-  const cities = t.state.follows.filter((f) => f.targetType === "city");
+  const places = t.state.follows.filter((f) => f.targetType !== "host");
   const hosts = t.state.follows.filter((f) => f.targetType === "host");
   const offerFor = (expId?: string) => {
     const b = expId ? t.bookingFor(expId) : undefined;
@@ -44,7 +46,7 @@ export function FollowingPage() {
     <div className="grid gap-9">
       <header>
         <h1 className="text-[52px] sm:text-[60px]">Following</h1>
-        <p className="tv-muted max-w-[60ch] text-[20px]">When a matching experience is published, we tell you by email and in Plume. Nothing else, and never your plans.</p>
+        <p className="tv-sub max-w-[60ch]">When something matching is published, we tell you by email and in Plume. Nothing else, and never your plans.</p>
       </header>
 
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
@@ -59,7 +61,7 @@ export function FollowingPage() {
                 const e = n.to?.experienceId ? t.state.experiences.find((x) => x.id === n.to!.experienceId) : undefined;
                 const offerBooking = n.kind === "waitlist_offer" ? offerFor(n.to?.experienceId) : undefined;
                 return (
-                  <li key={n.id} className={cn("tv-panel grid gap-1", !n.read && "border-tv-lilac bg-tv-lilac-soft")}>
+                  <li key={n.id} className={cn("tv-panel grid gap-1", !n.read && "border-tv-lilac bg-tv-lilac-soft", n.kind === "live" && !n.read && "border-tv-live")}>
                     <p className="font-bold">{n.text}</p>
                     {n.detail && <p className="tv-muted tv-small">{n.detail}</p>}
                     <div className="mt-1.5 flex flex-wrap gap-2">
@@ -73,23 +75,36 @@ export function FollowingPage() {
                 );
               })}
             </ol>
-          ) : <Empty title="No alerts yet">Follow a city or a host, and new experiences will show up here.</Empty>}
+          ) : <Empty title="No alerts yet">Follow a place or a host, and new experiences will show up here.</Empty>}
         </section>
 
         <div className="grid gap-6">
-          <section className="tv-panel" aria-labelledby="cities-h">
-            <h2 id="cities-h" className="text-[26px]">Cities</h2>
-            {cities.length ? <ul className="divide-y divide-tv-line">{cities.map((f) => <FollowRow key={f.id} f={f} />)}</ul> : <p className="tv-muted mt-1">You don't follow any cities yet.</p>}
-            <form className="mt-3 flex flex-wrap items-end gap-2" onSubmit={(e) => {
-              e.preventDefault();
-              if (t.isFollowing("city", city)) { t.toast(`You already follow ${city}`); return; }
-              t.toggleFollow("city", city); t.toast(`Following ${city}`);
-            }}>
-              <label className="tv-field min-w-[180px] flex-1"><span className="tv-label">Follow a city</span>
-                <select value={city} onChange={(e) => setCity(e.target.value)}>{CITIES.map((c) => <option key={c}>{c}</option>)}</select>
-              </label>
-              <button type="submit" className="tv-btn">Follow</button>
-            </form>
+          <section className="tv-panel" aria-labelledby="places-h">
+            <h2 id="places-h" className="text-[26px]">Places</h2>
+            {places.length ? <ul className="divide-y divide-tv-line">{places.map((f) => <FollowRow key={f.id} f={f} />)}</ul> : <p className="tv-muted mt-1">You don't follow any places yet.</p>}
+            <div className="mt-3 grid gap-1.5">
+              <span className="font-bold">Follow any city, country, continent or neighborhood</span>
+              <LocationSearch value={null} variant="field" label="Follow a place" placeholder="Seoul, Portugal, Africa or Brooklyn"
+                onPick={(p) => {
+                  const type: Follow["targetType"] = p.kind === "area" ? "area" : p.kind === "country" ? "country" : p.kind === "continent" ? "continent" : "city";
+                  if (t.isFollowing(type, p.name)) { t.toast(`You already follow ${placeLabel(p)}`); return; }
+                  t.toggleFollow(type, p.name); t.toast(`Following ${placeLabel(p)}`);
+                }} />
+            </div>
+          </section>
+          <section className="tv-panel" aria-labelledby="trips-h">
+            <h2 id="trips-h" className="text-[26px]">Trip alerts</h2>
+            <p className="tv-muted text-[16px]">Saved searches: we tell you when something new is posted for your place and dates.</p>
+            {t.state.savedSearches.length ? (
+              <ul className="mt-2 divide-y divide-tv-line">
+                {t.state.savedSearches.map((s) => (
+                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <span><b>{s.label}</b><span className="tv-muted block text-[16px]">{rangeLabel(s.from, s.to)}{s.timeOfDay !== "any" ? `, ${TIME_LABEL[s.timeOfDay].toLowerCase()}` : ""}</span></span>
+                    <button type="button" className="tv-link text-[17px]" onClick={() => { t.removeSearch(s.id); t.toast(`Trip alert for ${s.label} removed`); }}>Remove</button>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="tv-muted mt-2">In I'm Traveling, use "Alert me for these dates".</p>}
           </section>
           <section className="tv-panel" aria-labelledby="hosts-h">
             <h2 id="hosts-h" className="text-[26px]">Brands and hosts</h2>

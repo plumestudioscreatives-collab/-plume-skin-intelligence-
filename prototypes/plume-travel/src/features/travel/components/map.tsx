@@ -5,6 +5,8 @@ const RIVERS: Record<string, string> = {
   "New York": "M30 0 C26 22 34 44 28 80 M78 0 C70 26 82 50 74 80",
   Lisbon: "M0 66 C24 60 46 70 68 62 S92 58 100 60",
   Tulum: "M70 0 C66 24 74 52 68 80",
+  London: "M0 58 C20 50 34 66 52 56 S80 44 100 52",
+  Seoul: "M0 62 C26 56 40 70 62 60 S88 54 100 58",
 };
 
 type Pin = { e: Experience; status: "booked" | "saved" | "suggested" };

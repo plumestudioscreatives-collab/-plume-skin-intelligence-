@@ -2,23 +2,26 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Lock, Trash2 } from "lucide-react";
 import { HOSTS, ME } from "../data/seed";
-import { dayLabel, localDate, shortDate, slotTime, timeRange } from "../lib/format";
-import type { Experience, Itinerary } from "../types";
+import { dayLabel, isLive, localDate, shortDate, slotTime, timeRange } from "../lib/format";
+import { sensoryMatch } from "../lib/match";
+import type { Experience, Trip } from "../types";
 import { useTravel } from "../state/store";
-import { Art, Empty, Field, Modal } from "../components/ui";
+import { Art, Empty, FeatureHead, Field, LiveBadge, MatchPill, Modal } from "../components/ui";
 import { MapView } from "../components/map";
 import { TicketDialog } from "../components/booking";
-import { CITIES } from "../data/seed";
+import { LocationSearch } from "../components/LocationSearch";
+import { findPlace, type Place } from "../data/places";
 
 type Row = { e: Experience; status: "booked" | "saved" | "waitlisted" | "requested" };
 
-function rowsFor(t: ReturnType<typeof useTravel>, it: Itinerary): Row[] {
+function rowsFor(t: ReturnType<typeof useTravel>, it: Trip): Row[] {
   return it.items.map((i) => {
-    const e = t.state.experiences.find((x) => x.id === i.experienceId)!;
+    const e = t.state.experiences.find((x) => x.id === i.experienceId);
+    if (!e) return null;
     const b = t.bookingFor(e.id);
     const status: Row["status"] = b?.status === "booked" || b?.status === "checked_in" ? "booked" : b?.status === "waitlisted" ? "waitlisted" : b?.status === "applied" ? "requested" : i.status === "booked" ? "booked" : "saved";
     return { e, status };
-  }).filter((r) => !!r.e);
+  }).filter((r): r is Row => !!r);
 }
 
 function groupByDay(rows: Row[]) {
@@ -46,9 +49,10 @@ function Stop({ r, readOnly, onTicket, onRemove }: { r: Row; readOnly?: boolean;
       <Art palette={r.e.palette} className="aspect-square rounded-[14px]" />
       <div className="min-w-0">
         <Link to="/travel/e/$experienceId" params={{ experienceId: r.e.id }} className="font-bold leading-tight hover:underline">{r.e.title}</Link>
-        <p className="tv-muted text-[16px]">{slot && !readOnly ? `Entry ${slotTime(slot.startsAt, r.e.timezone)}, ` : ""}{timeRange(r.e).split(",")[0]}, {r.e.area}</p>
+        <p className="tv-muted text-[16px]">{slot && !readOnly ? `Entry ${slotTime(slot.startsAt, r.e.timezone)}, ` : ""}{timeRange(r.e, false)}, {r.e.neighborhood}</p>
       </div>
       <div className="col-span-2 flex flex-wrap items-center gap-2 sm:col-span-1 sm:justify-end">
+        {isLive(r.e) && <LiveBadge />}
         <span className={`tv-pill ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span>
         {!readOnly && r.status === "booked" && <button type="button" className="tv-btn tv-btn-soft tv-btn-sm" onClick={onTicket}>Ticket</button>}
         {!readOnly && r.status === "saved" && (
@@ -62,12 +66,12 @@ function Stop({ r, readOnly, onTicket, onRemove }: { r: Row; readOnly?: boolean;
   );
 }
 
-function Days({ it, readOnly }: { it: Itinerary; readOnly?: boolean }) {
+function Days({ it, readOnly }: { it: Trip; readOnly?: boolean }) {
   const t = useTravel();
   const rows = rowsFor(t, it);
   const [ticketFor, setTicketFor] = useState<string | null>(null);
   const ticket = ticketFor ? t.bookingFor(ticketFor) : undefined;
-  if (!rows.length) return <Empty title="This itinerary is empty">Save experiences from Discover and they'll appear here, grouped by day.</Empty>;
+  if (!rows.length) return <Empty title="This itinerary is empty">Save experiences from Discover, or use Plan My Trip, and they'll appear here by day.</Empty>;
   return (
     <div className="grid gap-6">
       {groupByDay(rows).map(([day, rs]) => (
@@ -83,7 +87,7 @@ function Days({ it, readOnly }: { it: Itinerary; readOnly?: boolean }) {
   );
 }
 
-function nearbySuggestion(all: Experience[], it: Itinerary, rows: Row[]) {
+function nearbySuggestion(all: Experience[], it: Trip, rows: Row[]) {
   const inIt = new Set(it.items.map((i) => i.experienceId));
   const candidates = all.filter((e) => e.status === "published" && e.city === it.city && !inIt.has(e.id) &&
     (e.recurring || (localDate(e.startsAt, e.timezone) >= it.from && localDate(e.startsAt, e.timezone) <= it.to)));
@@ -95,25 +99,29 @@ function nearbySuggestion(all: Experience[], it: Itinerary, rows: Row[]) {
   return best;
 }
 
-function NewItinerary({ onClose }: { onClose: () => void }) {
+function NewTrip({ onClose }: { onClose: () => void }) {
   const t = useTravel();
-  const [f, setF] = useState({ name: "", city: "Paris", from: "2027-06-12", to: "2027-06-18" });
+  const [f, setF] = useState<{ name: string; place: Place | null; from: string; to: string }>({ name: "", place: findPlace("Lisbon") ?? null, from: "2026-11-12", to: "2026-11-16" });
   const [err, setErr] = useState("");
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!f.name.trim()) { setErr("Give it a name, like My Paris weekend."); return; }
+    if (!f.name.trim()) { setErr("Give it a name, like My Lisbon weekend."); return; }
+    if (!f.place) { setErr("Choose where you're going."); return; }
     if (f.to < f.from) { setErr("The end date is before the start date."); return; }
-    t.createItinerary(f.name.trim(), f.city, f.from, f.to);
+    const city = f.place.kind === "area" ? f.place.city! : f.place.name;
+    t.createTrip(f.name.trim(), city, f.from, f.to);
     t.toast(`Created ${f.name.trim()}`); onClose();
   };
   return (
     <Modal open onClose={onClose} title="New itinerary">
       <form className="grid gap-3" onSubmit={submit} noValidate>
-        <Field label="Name" htmlFor="ni-name" error={err}><input id="ni-name" value={f.name} placeholder="My Paris weekend" onChange={(e) => setF({ ...f, name: e.target.value })} aria-invalid={!!err} /></Field>
-        <Field label="City" htmlFor="ni-city"><select id="ni-city" value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })}>{CITIES.map((c) => <option key={c}>{c}</option>)}</select></Field>
+        <Field label="Name" htmlFor="nt-name" error={err}><input id="nt-name" value={f.name} placeholder="My Lisbon weekend" onChange={(e) => setF({ ...f, name: e.target.value })} aria-invalid={!!err} /></Field>
+        <div className="tv-field"><span className="tv-label">Where</span>
+          <LocationSearch variant="field" label="Where are you going?" value={f.place} onPick={(p) => setF({ ...f, place: p })} />
+        </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="From" htmlFor="ni-from"><input id="ni-from" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} /></Field>
-          <Field label="To" htmlFor="ni-to"><input id="ni-to" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} /></Field>
+          <Field label="From" htmlFor="nt-from"><input id="nt-from" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} /></Field>
+          <Field label="To" htmlFor="nt-to"><input id="nt-to" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} /></Field>
         </div>
         <p className="tv-muted tv-small">Only you can see it until you share it.</p>
         <div className="flex justify-end gap-2"><button type="button" className="tv-btn tv-btn-alt" onClick={onClose}>Cancel</button><button type="submit" className="tv-btn">Create</button></div>
@@ -122,7 +130,7 @@ function NewItinerary({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ShareDialog({ it, onClose }: { it: Itinerary; onClose: () => void }) {
+function ShareDialog({ it, onClose }: { it: Trip; onClose: () => void }) {
   const t = useTravel();
   const navigate = useNavigate();
   const url = it.shareToken ? `https://plume.app/travel/i/${it.shareToken}` : "";
@@ -144,7 +152,7 @@ function ShareDialog({ it, onClose }: { it: Itinerary; onClose: () => void }) {
       ) : (
         <div className="grid gap-3">
           <p>Only you can see this until you share it. A share link is view-only: people can see the plan, not change it, and never see your ticket codes.</p>
-          <div className="flex justify-end gap-2"><button type="button" className="tv-btn tv-btn-alt" onClick={onClose}>Cancel</button><button type="button" className="tv-btn" onClick={() => t.shareItinerary(it.id)}>Create a view-only link</button></div>
+          <div className="flex justify-end gap-2"><button type="button" className="tv-btn tv-btn-alt" onClick={onClose}>Cancel</button><button type="button" className="tv-btn" onClick={() => t.shareTrip(it.id)}>Create a view-only link</button></div>
         </div>
       )}
     </Modal>
@@ -155,46 +163,53 @@ export function ItineraryPage() {
   const t = useTravel();
   const [creating, setCreating] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const it = t.state.itineraries.find((i) => i.id === t.state.activeItinerary) ?? t.state.itineraries[0];
+  const it = t.state.trips.find((i) => i.id === t.state.activeTrip) ?? t.state.trips[0];
   const rows = it ? rowsFor(t, it) : [];
-  if (!it) return <Empty title="No itineraries yet" action={<button className="tv-btn" onClick={() => setCreating(true)}>New itinerary</button>}>Plan a trip or a weekend at home.</Empty>;
-  const sug = nearbySuggestion(t.state.experiences, it, rows);
+  const sug = it ? nearbySuggestion(t.state.experiences, it, rows) : null;
   const pins = [...rows.map((r) => ({ e: r.e, status: r.status === "booked" ? "booked" as const : "saved" as const })), ...(sug ? [{ e: sug.e, status: "suggested" as const }] : [])];
 
   return (
     <div className="grid gap-7">
+      <FeatureHead k="trips" as="h1" />
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Your itineraries">
-        {t.state.itineraries.map((i) => (
-          <button key={i.id} type="button" role="radio" aria-checked={i.id === it.id} className="tv-chip" onClick={() => t.setActiveItinerary(i.id)}>{i.name}</button>
+        {t.state.trips.map((i) => (
+          <button key={i.id} type="button" role="radio" aria-checked={i.id === it?.id} className="tv-chip" onClick={() => t.setActiveTrip(i.id)}>{i.name}</button>
         ))}
         <button type="button" className="tv-chip border-dashed" onClick={() => setCreating(true)}>New itinerary</button>
       </div>
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[48px] sm:text-[58px]">{it.name}</h1>
-          <p className="tv-muted text-[20px]">{it.city}, {shortDate(it.from)} to {shortDate(it.to)}</p>
-          <p className="tv-small mt-1 flex items-center gap-2">{it.shareToken ? <span className="tv-pill tv-pill-blue">Shared with a view-only link</span> : <><Lock size={16} aria-hidden="true" />Only you can see this until you share it.</>}</p>
-        </div>
-        <button type="button" className="tv-btn" onClick={() => setSharing(true)}>{it.shareToken ? "Sharing" : "Share"}</button>
-      </header>
-      <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="grid gap-6">
-          <Days it={it} />
-          {sug && (
-            <section className="tv-panel" aria-labelledby="near-h">
-              <h2 id="near-h" className="text-[24px]">While you're nearby</h2>
-              <p className="mt-1">{sug.e.title} at {HOSTS[sug.e.hostId].name} is a short walk from {sug.near.title}{sug.e.recurring ? ", open every day" : `, on ${dayLabel(localDate(sug.e.startsAt, sug.e.timezone))}`}.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" className="tv-btn tv-btn-soft" onClick={() => { t.saveTo(sug.e.id, it.id); t.toast(`Saved ${sug.e.title} to ${it.name}`); }}>Save it</button>
-                <Link to="/travel/e/$experienceId" params={{ experienceId: sug.e.id }} className="tv-btn tv-btn-alt">See the experience</Link>
-              </div>
-            </section>
-          )}
-        </div>
-        <div className="lg:sticky lg:top-[110px]"><MapView city={it.city} pins={pins} title={`Map of ${it.name}`} /></div>
-      </div>
-      {creating && <NewItinerary onClose={() => setCreating(false)} />}
-      {sharing && <ShareDialog it={t.state.itineraries.find((i) => i.id === it.id)!} onClose={() => setSharing(false)} />}
+      {!it ? <Empty title="No itineraries yet" action={<button className="tv-btn" onClick={() => setCreating(true)}>New itinerary</button>}>Plan a trip, or a weekend at home.</Empty> : (
+        <>
+          <header className="flex flex-wrap items-end justify-between gap-4 border-t border-tv-line pt-6">
+            <div>
+              <h2 className="text-[44px] sm:text-[52px]">{it.name}</h2>
+              <p className="tv-muted text-[20px]">{it.city}, {shortDate(it.from)} to {shortDate(it.to)}</p>
+              <p className="tv-small mt-1 flex items-center gap-2">{it.shareToken ? <span className="tv-pill tv-pill-blue">Shared with a view-only link</span> : <><Lock size={16} aria-hidden="true" />Only you can see this until you share it.</>}</p>
+            </div>
+            <button type="button" className="tv-btn" onClick={() => setSharing(true)}>{it.shareToken ? "Sharing" : "Share"}</button>
+          </header>
+          <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="grid gap-6">
+              <Days it={it} />
+              {sug && (
+                <section className="tv-panel" aria-labelledby="near-h">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 id="near-h" className="text-[24px]">While you're nearby</h2>
+                    <MatchPill score={sensoryMatch(sug.e, t.state.profile).score} />
+                  </div>
+                  <p className="mt-1">{sug.e.title} at {HOSTS[sug.e.hostId].name} is close to {sug.near.title}{sug.e.recurring ? ", open every day" : `, on ${dayLabel(localDate(sug.e.startsAt, sug.e.timezone))}`}.</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" className="tv-btn tv-btn-soft" onClick={() => { t.saveTo(sug.e.id, it.id); t.toast(`Added ${sug.e.title} to ${it.name}`); }}>Add to this itinerary</button>
+                    <Link to="/travel/e/$experienceId" params={{ experienceId: sug.e.id }} className="tv-btn tv-btn-alt">See the experience</Link>
+                  </div>
+                </section>
+              )}
+            </div>
+            <div className="lg:sticky lg:top-[110px]"><MapView city={it.city} pins={pins} title={`Map of ${it.name}`} /></div>
+          </div>
+        </>
+      )}
+      {creating && <NewTrip onClose={() => setCreating(false)} />}
+      {sharing && it && <ShareDialog it={t.state.trips.find((i) => i.id === it.id)!} onClose={() => setSharing(false)} />}
     </div>
   );
 }
@@ -202,7 +217,7 @@ export function ItineraryPage() {
 export function SharedItineraryPage() {
   const { token } = useParams({ strict: false }) as { token?: string };
   const t = useTravel();
-  const it = t.state.itineraries.find((i) => i.shareToken && i.shareToken === token);
+  const it = t.state.trips.find((i) => i.shareToken && i.shareToken === token);
   if (!it) return <Empty title="This link has been turned off">The person who shared it stopped sharing, or the link is mistyped.</Empty>;
   return (
     <div className="grid gap-6">

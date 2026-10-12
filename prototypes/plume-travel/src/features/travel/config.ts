@@ -13,14 +13,23 @@ export const SENSORY_MIN_VOTES = 10;
 /** How long a waitlist offer stays open before it passes to the next person. */
 export const WAITLIST_OFFER_HOURS = 2;
 
-/** Fixed "today" for the mock-data preview so sample dates read consistently. */
+/** During a live event (Happening Now) an opened place is held for this many minutes. */
+export const LIVE_OFFER_MINUTES = 10;
+
+/** Fixed "today" and "now" for the mock-data preview so sample dates read consistently.
+ *  NOW is 3:00 pm in New York, while two Brooklyn events are happening. */
 export const TODAY = "2026-10-12";
+export const NOW = "2026-10-12T19:00:00Z";
+
+export type Currency = "EUR" | "USD" | "GBP" | "KRW";
 
 /**
  * Rough Stripe processing-fee estimates for the host payout preview only.
  * Stripe sets the real fee; it varies by card, country and account.
  */
-export const STRIPE_FEE_ESTIMATE: Record<"EUR" | "USD", { percent: number; fixed: number }> = {
+export const STRIPE_FEE_ESTIMATE: Record<Currency, { percent: number; fixed: number }> = {
   EUR: { percent: 1.5, fixed: 0.25 },
   USD: { percent: 2.9, fixed: 0.3 },
+  GBP: { percent: 1.5, fixed: 0.2 },
+  KRW: { percent: 3.4, fixed: 0 },
 };

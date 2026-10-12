@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import logo from "@/assets/plume-logo.png";
 import { cn } from "../lib/cn";
 import type { Palette, TravelHost } from "../types";
+import { feature, type FeatureKey } from "../copy";
 import { useTravel } from "../state/store";
 
 // Soft grainy gradient fields in the brand palette, from the reference file.
@@ -119,4 +120,35 @@ export function Gate({ title, children }: { title: string; children: ReactNode }
       <div className="tv-muted mt-3 text-[20px]">{children}</div>
     </div>
   );
+}
+
+/** A feature's title with its one-line description directly underneath, in italic secondary ink. */
+export function FeatureHead({ k, as: As = "h2", title, className, size, id, children }: {
+  k: FeatureKey; as?: "h1" | "h2" | "h3"; title?: string; className?: string; size?: string; id?: string; children?: ReactNode;
+}) {
+  const f = feature(k);
+  return (
+    <div className={cn("min-w-0", className)}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <As id={id} className={size ?? (As === "h1" ? "text-[48px] sm:text-[58px]" : "text-[26px]")}>{title ?? f.name}</As>
+        {children}
+      </div>
+      <p className="tv-sub mt-1 max-w-[62ch]">{f.description}</p>
+    </div>
+  );
+}
+
+/** Happening Now badge: live pink with a pulsing dot (static with reduced motion). */
+export function LiveBadge({ className }: { className?: string }) {
+  return <span className={cn("tv-live-badge", className)}><span className="tv-live-dot" aria-hidden="true" />Happening now</span>;
+}
+
+/** Sensory Match pill. */
+export function MatchPill({ score, className }: { score: number; className?: string }) {
+  return <span className={cn("tv-match", className)} title="Sensory Match"><b>{score}</b>/10&nbsp;match</span>;
+}
+
+/** Marks illustrative numbers, badges and quotes as sample data, never as measured results. */
+export function SampleTag({ children = "Sample", className }: { children?: ReactNode; className?: string }) {
+  return <span className={cn("tv-sample", className)} title="Illustrative sample data in this preview">{children}</span>;
 }
