@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+/*
+ * Plume Travel design tokens. Prefixed --tv-* so they never collide with the Plume app's
+ * shadcn tokens. Colors come from the Plume Travel spec; dark values from the reference file.
+ * Tailwind utilities: bg-tv-page, text-tv-ink, border-tv-line, font-tv, etc.
+ */
+@theme inline {
+  --color-tv-page: var(--tv-page);
+  --color-tv-surface: var(--tv-surface);
+  --color-tv-lilac: var(--tv-lilac);
+  --color-tv-lilac-soft: var(--tv-lilac-soft);
+  --color-tv-pink: var(--tv-pink);
+  --color-tv-blue: var(--tv-blue);
+  --color-tv-ink: var(--tv-ink);
+  --color-tv-ink-2: var(--tv-ink-2);
+  --color-tv-line: var(--tv-line);
+  --color-tv-accent: var(--tv-accent);
+  --color-tv-on-accent: var(--tv-on-accent);
+  --color-tv-ok: var(--tv-ok);
+  --color-tv-warn: var(--tv-warn);
+  --font-tv: "Cormorant Garamond", "Cormorant", Garamond, "Times New Roman", serif;
+}
+
+:root {
+  --tv-page: #F8F4FB;
+  --tv-surface: #FFFFFF;
+  --tv-lilac: #CBBDE1;
+  --tv-lilac-soft: #EEE7F6;
+  --tv-pink: #F5D7E1;
+  --tv-blue: #D4E4F5;
+  --tv-ink: #2E2440;
+  --tv-ink-2: #675C7B;
+  --tv-line: #E3DAEE;
+  --tv-accent: #5C468A;
+  --tv-on-accent: #FFFFFF;
+  --tv-ok: #2E7A5A;
+  --tv-warn: #9A5A1F;
+  --tv-scrim: rgba(27, 22, 37, .42);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tv-page: #1B1625; --tv-surface: #241E30; --tv-lilac: #4B3F63; --tv-lilac-soft: #2E2640; --tv-pink: #4A2F3C; --tv-blue: #263548;
+    --tv-ink: #F2ECF8; --tv-ink-2: #B9ADCC; --tv-line: #3A3149; --tv-accent: #CDBBEE; --tv-on-accent: #1B1625; --tv-ok: #7FD0AA; --tv-warn: #E6B07A;
+    --tv-scrim: rgba(8, 6, 12, .62);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"], .dark {
+  --tv-page: #1B1625; --tv-surface: #241E30; --tv-lilac: #4B3F63; --tv-lilac-soft: #2E2640; --tv-pink: #4A2F3C; --tv-blue: #263548;
+  --tv-ink: #F2ECF8; --tv-ink-2: #B9ADCC; --tv-line: #3A3149; --tv-accent: #CDBBEE; --tv-on-accent: #1B1625; --tv-ok: #7FD0AA; --tv-warn: #E6B07A;
+  --tv-scrim: rgba(8, 6, 12, .62);
+  color-scheme: dark;
+}
+
+body { margin: 0; background: var(--tv-page); color: var(--tv-ink); }
+
+/* Everything in Plume Travel is Cormorant Garamond: headings 700, body 500, 19px body. */
+.plume-travel {
+  font-family: var(--font-tv);
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--tv-ink);
+  background: var(--tv-page);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: lining-nums;
+}
+/* In @layer base so component and utility classes (buttons, chips, font weights) can override them. */
+@layer base {
+  .plume-travel :where(h1, h2, h3, h4) { font-weight: 700; line-height: 1.12; text-wrap: balance; }
+  .plume-travel :where(button, input, select, textarea) { font: inherit; color: inherit; }
+  .plume-travel :where(p) { text-wrap: pretty; }
+  /* Let grid children shrink, so long select options or words never push a page wider than the phone. */
+  .plume-travel .grid > * { min-width: 0; }
+}
+.plume-travel :focus-visible { outline: 2px solid var(--tv-accent); outline-offset: 3px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { .plume-travel *, .plume-travel *::before, .plume-travel *::after { transition: none !important; animation: none !important; } }
+
+@layer components {
+  /* buttons: pill, sentence case, no arrows */
+  .tv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--tv-ink); background: var(--tv-ink); color: var(--tv-page); font-weight: 600; font-size: 18px; cursor: pointer; white-space: nowrap; transition: background .2s, color .2s, border-color .2s, transform .15s; }
+  .tv-btn:hover:not(:disabled) { background: var(--tv-accent); border-color: var(--tv-accent); color: var(--tv-on-accent); }
+  .tv-btn:active:not(:disabled) { transform: translateY(1px); }
+  .tv-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .tv-btn-alt { background: transparent; color: var(--tv-ink); }
+  .tv-btn-alt:hover:not(:disabled) { background: var(--tv-lilac-soft); color: var(--tv-ink); border-color: var(--tv-ink); }
+  .tv-btn-soft { background: var(--tv-lilac-soft); border-color: transparent; color: var(--tv-ink); }
+  .tv-btn-soft:hover:not(:disabled) { background: var(--tv-lilac); color: var(--tv-ink); border-color: transparent; }
+  .tv-btn-sm { min-height: 38px; padding: 0 16px; font-size: 17px; }
+  .tv-btn-lg { min-height: 54px; padding: 0 28px; font-size: 20px; }
+  .tv-link { background: none; border: 0; padding: 0; color: var(--tv-accent); cursor: pointer; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .tv-link:hover { text-decoration-thickness: 2px; }
+
+  .tv-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; border: 1px solid var(--tv-line); background: var(--tv-surface); padding: 0 15px; border-radius: 999px; cursor: pointer; font-size: 17px; font-weight: 500; transition: border-color .2s, background .2s, color .2s; }
+  .tv-chip:hover { border-color: var(--tv-ink-2); }
+  .tv-chip[aria-pressed="true"], .tv-chip[aria-checked="true"], .tv-chip.is-on { background: var(--tv-ink); color: var(--tv-page); border-color: var(--tv-ink); }
+  .tv-chip:disabled { opacity: .5; cursor: not-allowed; text-decoration: line-through; }
+
+  .tv-panel { background: var(--tv-surface); border: 1px solid var(--tv-line); border-radius: 22px; padding: 20px 22px; }
+  .tv-muted { color: var(--tv-ink-2); }
+  .tv-small { font-size: 17px; }
+  .tv-xs { font-size: 16px; }
+  .tv-italic-label { font-style: italic; color: var(--tv-ink-2); }
+
+  /* grainy gradient field (placeholder imagery until hosts upload photos) */
+  .tv-art { position: relative; overflow: hidden; border-radius: 20px; isolation: isolate; }
+  .tv-art::after { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; opacity: .7;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"); }
+  /* photos of women get a light lilac tint */
+  .tv-photo-tint { position: relative; }
+  .tv-photo-tint::after { content: ""; position: absolute; inset: 0; background: #CBBDE1; mix-blend-mode: color; opacity: .28; pointer-events: none; border-radius: inherit; }
+
+  .tv-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, .92); color: #2E2440; padding: 3px 12px; border-radius: 999px; font-size: 16px; font-weight: 700; }
+  .tv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 11px; border-radius: 999px; font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .tv-pill-ok { background: color-mix(in srgb, var(--tv-ok) 16%, var(--tv-surface)); color: var(--tv-ok); }
+  .tv-pill-soft { background: var(--tv-lilac-soft); color: var(--tv-ink-2); }
+  .tv-pill-warn { background: color-mix(in srgb, var(--tv-warn) 14%, var(--tv-surface)); color: var(--tv-warn); }
+  .tv-pill-pink { background: var(--tv-pink); color: var(--tv-ink); }
+  .tv-pill-blue { background: var(--tv-blue); color: var(--tv-ink); }
+
+  .tv-switch { position: relative; width: 50px; height: 28px; border-radius: 99px; border: 0; background: var(--tv-line); cursor: pointer; flex: none; transition: background .15s; }
+  .tv-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .2); transition: left .15s; }
+  .tv-switch[aria-checked="true"] { background: var(--tv-accent); }
+  .tv-switch[aria-checked="true"]::after { left: 25px; }
+
+  .tv-input, .tv-field :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+    width: 100%; min-height: 48px; border: 1px solid var(--tv-line); background: var(--tv-surface); border-radius: 12px; padding: 9px 13px; font-size: 19px; font-weight: 500; transition: border-color .15s;
+  }
+  .tv-field textarea { min-height: 96px; resize: vertical; line-height: 1.45; }
+  .tv-input:focus, .tv-field :where(input, select, textarea):focus { outline: none; border-color: var(--tv-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-accent) 22%, transparent); }
+  .tv-field { display: grid; gap: 6px; min-width: 0; }
+  .tv-field > .tv-label { font-weight: 700; font-size: 18px; }
+  .tv-field .tv-hint { font-size: 16px; color: var(--tv-ink-2); font-style: italic; }
+  .tv-error { color: #A3302B; font-size: 17px; font-weight: 600; }
+  :root[data-theme="dark"] .tv-error, .dark .tv-error { color: #F4A9A3; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tv-error { color: #F4A9A3; } }
+  .tv-field [aria-invalid="true"] { border-color: #A3302B; }
+  .tv-check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+  .tv-check input { width: 20px; height: 20px; margin-top: 5px; accent-color: var(--tv-accent); flex: none; }
+
+  .tv-kv { display: grid; grid-template-columns: 170px 1fr; gap: 8px 18px; font-size: 19px; }
+  .tv-kv dt { color: var(--tv-ink-2); font-style: italic; }
+  .tv-kv dd { margin: 0; min-width: 0; }
+
+  .tv-note { border-left: 3px solid var(--tv-warn); padding: 10px 14px; background: color-mix(in srgb, var(--tv-warn) 9%, var(--tv-surface)); border-radius: 0 12px 12px 0; font-size: 18px; }
+  .tv-verified { display: inline-flex; gap: 6px; align-items: center; color: var(--tv-ok); font-weight: 700; font-size: 18px; }
+
+  .tv-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--tv-line); overflow-x: auto; scrollbar-width: none; position: relative; }
+  .tv-tabs::-webkit-scrollbar { display: none; }
+  .tv-tabs button { border: 0; background: none; padding: 10px 16px; min-height: 48px; cursor: pointer; font-weight: 600; font-size: 19px; color: var(--tv-ink-2); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tv-tabs button[aria-selected="true"] { color: var(--tv-ink); border-bottom-color: var(--tv-ink); }
+
+  .tv-meter { height: 8px; background: var(--tv-lilac-soft); border-radius: 99px; overflow: hidden; }
+  .tv-meter > i { display: block; height: 100%; background: var(--tv-accent); border-radius: 99px; }
+
+  /* the sentence search: the one bold moment on Discover */
+  .tv-sentence { font-weight: 700; font-size: clamp(36px, 5.4vw, 64px); line-height: 1.14; letter-spacing: -.005em; }
+  .tv-sentence :where(select, .tv-inline) { font: inherit; font-weight: 700; border: 0; border-bottom: 2px solid var(--tv-lilac); background: transparent; color: var(--tv-accent); padding: 0 2px; cursor: pointer; appearance: none; -webkit-appearance: none; border-radius: 0; line-height: 1.05; }
+  .tv-sentence select { padding-right: 4px; }
+  .tv-sentence select option { font-size: 18px; color: #2E2440; background: #fff; }
+  .tv-sentence :where(select, .tv-inline):hover { border-bottom-color: var(--tv-accent); }
+  .tv-sentence :where(select, .tv-inline):focus-visible { outline: none; border-bottom-color: var(--tv-accent); background: var(--tv-lilac-soft); }
+
+  .tv-scrim { position: fixed; inset: 0; z-index: 60; background: var(--tv-scrim); display: grid; place-items: center; padding: 16px; animation: tv-fade .2s ease; }
+  .tv-dialog { background: var(--tv-page); color: var(--tv-ink); border-radius: 26px; width: min(640px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 26px 28px; outline: none; box-shadow: 0 30px 80px rgba(20, 12, 30, .3); }
+  .tv-dialog-wide { width: min(860px, 100%); }
+  @keyframes tv-fade { from { opacity: 0; } to { opacity: 1; } }
+  .tv-toast { pointer-events: auto; display: flex; gap: 12px; align-items: center; background: var(--tv-ink); color: var(--tv-page); padding: 12px 14px 12px 22px; border-radius: 999px; font-weight: 600; font-size: 18px; box-shadow: 0 10px 30px rgba(20, 12, 30, .25); animation: tv-pop .22s ease; }
+  @keyframes tv-pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .tv-skip { position: absolute; left: 12px; top: 8px; z-index: 80; background: var(--tv-ink); color: var(--tv-page); padding: 10px 16px; border-radius: 999px; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap; }
+  .tv-skip:focus { clip-path: none; width: auto; height: auto; }
+}
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
