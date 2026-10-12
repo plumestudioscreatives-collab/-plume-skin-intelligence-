@@ -1,0 +1,13 @@
+{
+  "name": "plume-media-prototype",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Interactive design prototype for Plume Media (sample data only, not production code).",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.23.1"
+  }
+}
