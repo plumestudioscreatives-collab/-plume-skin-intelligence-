@@ -46,7 +46,7 @@ export function LivePanel({ e, onTicket }: { e: Experience; onTicket: () => void
           <p className="text-[24px] font-bold leading-tight">A place opened{offer.slotLabel ? ` at ${offer.slotLabel}` : ""}. It's held for you for {offer.holdMinutes ?? 10} minutes.</p>
           {remaining !== null && <p className="flex items-center gap-2 font-semibold"><Clock size={18} aria-hidden="true" />{Math.floor(remaining / 60000)}:{String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0")} left to claim it</p>}
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="tv-btn !border-white !bg-white !text-[#2E2440]" onClick={() => { t.claimOffer(b.id); t.toast("Place claimed. Your ticket is ready."); }}>Claim the place</button>
+            <button type="button" className="tv-btn !border-white !bg-white !text-[#2E2440]" onClick={() => { if (t.notYet()) return; t.claimOffer(b.id); t.toast("Place claimed. Your ticket is ready."); }}>Claim the place</button>
             <button type="button" className="tv-btn tv-btn-alt !border-white !text-white hover:!bg-white/15" onClick={() => { t.expireOffer(b.id); t.toast("Passed to the next person"); }}>Let it go</button>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { WATCH_COLLECTIONS, TRANSCRIPTS, CREATOR_TYPES } from '../data.js';
 import { useApp, fmtDate, isPublic, managedChannels } from '../store.js';
 import { Art } from '../art.jsx';
@@ -6,8 +7,6 @@ import { localMedia } from '../media.js';
 import {
   Icon, Button, IconButton, Chip, VideoCard, Byline, LabelRow, Label, FollowButton, SaveButton, ShareButton, ReportButton, Empty, Notice, Avatar,
 } from '../ui.jsx';
-
-const { useState } = React;
 
 const KINDS = ['Docuseries', 'Interview', 'Explainer', 'Short film'];
 

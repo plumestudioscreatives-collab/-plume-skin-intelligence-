@@ -77,7 +77,7 @@ export function BoardPage() {
 
   return (
     <div className="grid gap-7">
-      <section className="grid items-center gap-7 md:grid-cols-[minmax(0,1.4fr)_minmax(200px,1fr)]" aria-labelledby="board-h">
+      <section className="tv-board-hero grid items-center gap-7 md:grid-cols-[minmax(0,1.4fr)_minmax(200px,1fr)]" aria-labelledby="board-h">
         <div>
           <p className="tv-italic-label">Hosts, meet your next possibility</p>
           <h1 id="board-h" className="mt-1 text-[48px] leading-[1] sm:text-[66px]">The partnership board.</h1>

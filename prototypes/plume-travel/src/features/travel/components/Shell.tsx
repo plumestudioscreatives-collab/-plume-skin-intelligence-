@@ -14,21 +14,22 @@ const ROLES: { value: Role; label: string }[] = [
   { value: "admin", label: "Plume admin" },
 ];
 
-function PreviewBar() {
-  const { state, setRole, reset, toast } = useTravel();
+function PreviewBar({ app }: { app: boolean }) {
+  const { state, setRole, reset, toast, launch } = useTravel();
   const [confirm, setConfirm] = useState(false);
   const [theme, setTheme] = useState<"system" | "light" | "dark">(() => {
     try { return (window.localStorage.getItem("plume-travel-theme") as "light" | "dark" | null) ?? "system"; } catch { return "system"; }
   });
   useEffect(() => {
+    if (app) return; // inside the Plume app, the app owns the theme
     const root = document.documentElement;
     if (theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
     try { window.localStorage.setItem("plume-travel-theme", theme); } catch { /* ignore */ }
-  }, [theme]);
+  }, [theme, app]);
   return (
     <div className="border-b border-tv-line bg-tv-lilac-soft" role="region" aria-label="Preview controls">
-      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2 text-[16px] sm:px-6">
-        <span className="tv-italic-label">Preview with sample data. It's Monday, Oct 12, 3:00 pm in New York. Nothing is booked, paid or sent.</span>
+      <div className="tv-previewbar mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2 text-[16px] sm:px-6">
+        <span className="tv-italic-label">Preview with sample data. It's Monday, Oct 12, 3:00 pm in New York. Nothing is booked, paid or sent.{launch ? ` Booking opens ${launch.opensOn}.` : ""}</span>
         <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label="View the preview as">
           <span className="font-semibold">View as</span>
           {ROLES.map((r) => (
@@ -39,11 +40,11 @@ function PreviewBar() {
           ))}
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2"><span className="font-semibold">Theme</span>
+          {!app && <label className="flex items-center gap-2"><span className="font-semibold">Theme</span>
             <select className="tv-input !min-h-[34px] !w-auto !rounded-full !py-0 !text-[16px]" value={theme} onChange={(e) => setTheme(e.target.value as typeof theme)}>
               <option value="system">Match my device</option><option value="light">Light</option><option value="dark">Dark</option>
             </select>
-          </label>
+          </label>}
           {confirm ? (
             <span className="flex items-center gap-2"><span>Reset every change?</span>
               <button type="button" className="tv-btn tv-btn-sm !min-h-[34px]" onClick={() => { reset(); setConfirm(false); toast("Preview reset to the sample data"); }}>Reset</button>
@@ -102,14 +103,19 @@ function Nav() {
   );
 }
 
-export function TravelShell() {
+/**
+ * The Plume Travel frame: preview controls, Travel navigation, page outlet, footer.
+ * `app` is true inside the Plume app (the app owns theme and auth); `canPreview` shows the
+ * sample-data preview controls (View as, Reset), which are for Plume admins only in the app.
+ */
+export function TravelShell({ app = false, canPreview = true }: { app?: boolean; canPreview?: boolean }) {
   return (
     <HowItWorksProvider>
       <div className="plume-travel min-h-screen">
         <a href="#tv-main" className="tv-skip">Skip to content</a>
-        <PreviewBar />
+        {canPreview && <PreviewBar app={app} />}
         <header className="sticky top-[env(safe-area-inset-top,0px)] z-30 border-b border-tv-line bg-tv-page/90 backdrop-blur-md">
-          <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-7 gap-y-2 px-4 py-3 sm:px-6">
+          <div className="tv-topbar mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-7 gap-y-2 px-4 py-3 sm:px-6">
             <Link to="/travel" className="flex items-center gap-3 rounded-[12px]" aria-label="Plume Travel, Discover">
               <Logo />
               <span className="leading-tight">

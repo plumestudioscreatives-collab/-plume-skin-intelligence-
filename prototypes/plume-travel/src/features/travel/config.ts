@@ -1,6 +1,13 @@
 // Plume Travel configuration. Pricing lives here (and in travel_hosts.travel_plan) so a
 // paid host plan can be switched on later without a rebuild.
 
+/**
+ * On plumestudioscreatives.com: false while Plume Travel is a design preview. Every visitor sees
+ * the sample data and the "View as" switcher, and nothing is saved beyond their own browser.
+ * Set to true once Travel runs on real accounts and data (the backend build steps).
+ */
+export const TRAVEL_LAUNCHED = false;
+
 /** Monthly price of the host plan. Free during launch. */
 export const TRAVEL_HOST_PRICE_MONTHLY = 0;
 

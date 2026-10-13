@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { TOPICS, FORMATS, FORMATS_PLURAL, CREATOR_TYPES, CASE_TEMPLATES } from '../data.js';
 import { useApp, fmtDate, isPublic, managedChannels } from '../store.js';
 import { Art } from '../art.jsx';
@@ -5,8 +6,6 @@ import {
   Icon, Button, Chip, Segmented, ArticleCard, Byline, LabelRow, Label, LABEL_INFO, FollowButton, SaveButton,
   ShareButton, ReportButton, TopicLinks, TopicFollow, Avatar, CredentialLine, Empty, Notice, Prose,
 } from '../ui.jsx';
-
-const { useState } = React;
 
 const SELECTED = ['a1', 'a4', 'a3', 'a9', 'a6'];
 

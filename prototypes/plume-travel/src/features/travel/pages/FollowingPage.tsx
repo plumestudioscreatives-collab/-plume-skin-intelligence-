@@ -66,7 +66,7 @@ export function FollowingPage() {
                     {n.detail && <p className="tv-muted tv-small">{n.detail}</p>}
                     <div className="mt-1.5 flex flex-wrap gap-2">
                       {offerBooking && e && (
-                        <button type="button" className="tv-btn tv-btn-sm" onClick={() => { t.claimOffer(offerBooking.id); t.markRead(n.id); t.toast(e.price ? `Place claimed. ${priceLabel(e)} paid in test mode.` : "Place claimed. You're in."); }}>Claim the place</button>
+                        <button type="button" className="tv-btn tv-btn-sm" onClick={() => { if (t.notYet()) return; t.claimOffer(offerBooking.id); t.markRead(n.id); t.toast(e.price ? `Place claimed. ${priceLabel(e)} paid in test mode.` : "Place claimed. You're in."); }}>Claim the place</button>
                       )}
                       {e && <Link to="/travel/e/$experienceId" params={{ experienceId: e.id }} className="tv-btn tv-btn-alt tv-btn-sm" onClick={() => t.markRead(n.id)}>See the experience</Link>}
                       {!n.read && <button type="button" className="tv-link text-[17px]" onClick={() => t.markRead(n.id)}>Mark as read</button>}

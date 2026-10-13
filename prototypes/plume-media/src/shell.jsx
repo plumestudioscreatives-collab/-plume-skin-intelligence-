@@ -1,10 +1,9 @@
 // App chrome: preview bar with demo switcher, header, mobile tabs, footer, toasts.
+import { useState } from 'react';
 import { ACCOUNTS, PERSONA_ORDER } from './data.js';
 import { LOGO_URL } from './art.jsx';
 import { useApp } from './store.js';
 import { Icon, Button, IconButton, Avatar, Modal, Segmented, LABEL_INFO, Label } from './ui.jsx';
-
-const { useState } = React;
 
 const NAV = [
   { name: 'home', label: 'Home', icon: 'home' },
@@ -40,8 +39,15 @@ export const JOURNEYS = [
   },
 ];
 
+// On the Plume site before launch, the paid-class journey uses a class Amara already owns.
+const SITE_J2 = {
+  id: 'j2', title: 'Learn and submit', persona: 'amara', go: ['classroom', { id: 'c2', lesson: 'c2l3' }],
+  steps: ['Amara owns “Understanding Hyperpigmentation”; pick up where she left off', 'Take the quiz in module 2', 'Submit the private consultation brief in module 3', 'As Jordan, open the class and choose Buy to see when checkout opens'],
+};
+
 export function PreviewBar({ frame, setFrame }) {
-  const { state, dispatch, nav, toast } = useApp();
+  const { state, dispatch, nav, toast, launch } = useApp();
+  const journeyList = launch ? JOURNEYS.map((j) => (j.id === 'j2' ? SITE_J2 : j)) : JOURNEYS;
   const [confirm, setConfirm] = useState(false);
   const [journeys, setJourneys] = useState(false);
   const persona = ACCOUNTS[state.personaId];
@@ -52,7 +58,7 @@ export function PreviewBar({ frame, setFrame }) {
   return (
     <div className="preview-bar" role="region" aria-label="Prototype controls">
       <div className="pb-inner">
-        <span className="pb-mode"><span className="pb-dot" aria-hidden="true" />Preview<span className="pb-hide-sm"> · sample data only, nothing is published or charged</span></span>
+        <span className="pb-mode"><span className="pb-dot" aria-hidden="true" />Preview<span className="pb-hide-sm"> · sample data only, nothing is published or charged{launch ? `. Paid classes open ${launch.opensOn}` : ''}</span></span>
         <label className="pb-persona" htmlFor="persona-select">
           <span className="pb-label">Demo switcher</span>
           <select id="persona-select" value={state.personaId} onChange={(e) => switchTo(e.target.value)}>
@@ -76,7 +82,7 @@ export function PreviewBar({ frame, setFrame }) {
       <Modal open={journeys} onClose={() => setJourneys(false)} title="Review journeys" wide>
         <p className="muted">Each journey switches to the right demo account and opens the first screen. You’re viewing as <strong>{persona.name}</strong> now.</p>
         <ol className="journey-list">
-          {JOURNEYS.map((j) => (
+          {journeyList.map((j) => (
             <li key={j.id}>
               <div>
                 <h3>{j.title}</h3>

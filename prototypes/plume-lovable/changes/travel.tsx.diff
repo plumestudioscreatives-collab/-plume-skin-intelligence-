@@ -1,0 +1,32 @@
+--- a/src/routes/travel.tsx
++++ b/src/routes/travel.tsx
+@@ -1,7 +1,11 @@
++// /travel on plumestudioscreatives.com: the site's sidebar (AppShell) around the full Plume Travel
++// design preview. Every /travel page (Discover, listings, Host Studio, the partnership board...)
++// renders inside this layout. Sample data only. The design runs in the browser only; the sidebar
++// and the page head still render on the server.
++import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+ import AppShell from "@/plume/components/AppShell";
+-import { joinWaitlist } from "@/plume/waitlist";
+-import TravelPage from "@/plume/pages/TravelPage";
+-import { createFileRoute } from "@tanstack/react-router";
++import { TravelLayout } from "@/features/travel/app/TravelLayout";
++import { NotFound } from "@/features/travel/pages/NotFound";
+ 
+ const TITLE = "Plume Travel — The Partnership Board";
+ const DESC = "Find beauty brands, clinics, resorts and experience hosts to create with on the Plume Travel partnership board.";
+@@ -16,6 +20,12 @@
+     ],
+     links: [{ rel: "canonical", href: "https://plumestudioscreatives.com/travel" }],
+   }),
+-  component: () => <AppShell><TravelPage /></AppShell>,
++  component: () => (
++    <AppShell>
++      <ClientOnly fallback={<div className="plume-travel min-h-screen" aria-busy="true" />}>
++        <TravelLayout />
++      </ClientOnly>
++    </AppShell>
++  ),
++  notFoundComponent: NotFound,
+ });
+-

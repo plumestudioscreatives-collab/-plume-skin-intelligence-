@@ -1,9 +1,9 @@
 // Shared components: icons, buttons, labels, cards and form fields.
+import { useState, useEffect, useRef, Fragment } from 'react';
+import { createPortal } from 'react-dom';
 import { Art } from './art.jsx';
 import { CREATOR_TYPES, TOPICS, FORMATS, EDU_TYPES, ACCOUNTS } from './data.js';
 import { useApp, fmtPrice, fmtDate, fmtMinutes, isPublic } from './store.js';
-
-const { useState, useEffect, useRef, Fragment } = React;
 
 // ---------------------------------------------------------------- icons
 const P = {
@@ -432,7 +432,7 @@ export function Modal({ open, onClose, title, children, footer, wide }) {
   }, [open]);
   if (!open) return null;
   const root = document.getElementById('modal-root') || document.body;
-  return ReactDOM.createPortal(
+  return createPortal(
     <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className={'modal' + (wide ? ' modal-wide' : '')} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabIndex={-1} ref={ref}>
         <div className="modal-head">

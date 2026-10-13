@@ -1,10 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
 import { QUIZZES, ASSIGNMENTS, LESSON_BODIES, ACCOUNTS } from '../data.js';
 import { useApp, managedChannels, allLessons, courseProgress, fmtDate, fmtPrice, today } from '../store.js';
 import { Player } from '../player.jsx';
 import { Icon, Button, Notice, Progress, Prose, Empty, StatusPill, Field, describedBy } from '../ui.jsx';
 import { LESSON_ICON, LESSON_WORD } from './learn.jsx';
-
-const { useState, useEffect, useRef } = React;
 
 function staffNames(content, course) {
   const ch = content.channels[course.channelId];

@@ -1,10 +1,9 @@
 // Local demo state. Everything lives in this browser tab (and, when allowed,
 // localStorage). It is NOT a database, has no access control and is not secure.
+import { createContext, useContext } from 'react';
 import {
   ARTICLES, COURSES, VIDEOS, SERIES, CHANNELS, ACCOUNTS, SEED_USERS, SEED_SUBMISSIONS,
 } from './data.js';
-
-const { createContext, useContext } = React;
 
 export const STORAGE_KEY = 'plume-media-demo:v1';
 

@@ -1,10 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
 import { TOPICS, CREATOR_TYPES } from '../data.js';
 import { useApp, fmtDate, fmtPrice, fmtMinutes } from '../store.js';
 import { Art } from '../art.jsx';
 import { Icon, Button, Chip, Avatar, Empty, Skeleton, TopicFollow, FollowButton, CredentialLine, LabelRow, EduLabel } from '../ui.jsx';
 import { allEntries, byNewest, openEntry } from '../entries.js';
-
-const { useState, useEffect, useRef } = React;
 
 const FORMAT_OPTS = { article: 'Articles', blog: 'Blog posts', essay: 'Essays', guide: 'Guides', case: 'Case studies', masterclass: 'Masterclasses', video: 'Videos', series: 'Series episodes' };
 const DUR = { s: ['Under 15 min', (m) => m < 15], m: ['15–60 min', (m) => m >= 15 && m <= 60], l: ['Over an hour', (m) => m > 60] };

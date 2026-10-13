@@ -1,11 +1,10 @@
+import { useState } from 'react';
 import { TOPICS, CREATOR_TYPES, ACCOUNTS } from '../data.js';
 import { useApp, fmtDate, fmtPrice, courseProgress, allLessons, uid, isPublic } from '../store.js';
 import { Art } from '../art.jsx';
 import { Icon, Button, IconButton, Tabs, Chip, Avatar, Empty, Notice, Progress, Field, describedBy, VideoCard, StatusPill } from '../ui.jsx';
 import { allEntries, byNewest } from '../entries.js';
 import { FeedRow } from './home.jsx';
-
-const { useState } = React;
 
 function resolve(content, it) {
   if (it.kind === 'article') { const a = content.articles.find((x) => x.id === it.id); return a && { ...it, title: a.title, art: a.art, channelId: a.channelId, label: 'Article', go: ['article', { id: a.id }] }; }

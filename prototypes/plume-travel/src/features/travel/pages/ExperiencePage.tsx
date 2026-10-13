@@ -126,7 +126,7 @@ function BookingCard({ e, slotId, setSlotId, onBook, onTicket }: { e: Experience
       <>
         <p className="font-bold">A place opened for you.</p>
         <p className="tv-muted tv-small">{offer.holdMinutes ? `Held for ${offer.holdMinutes} minutes.` : `Held until ${new Date(offer.expiresAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: e.timezone })}, ${e.city} time.`} After that it goes to the next person.</p>
-        <button type="button" className="tv-btn w-full" onClick={() => { t.claimOffer(booking.id); t.toast(e.price ? `Place claimed. ${priceLabel(e)} paid in test mode.` : "Place claimed. You're in."); }}>Claim the place{e.price ? `, ${priceLabel(e)}` : ""}</button>
+        <button type="button" className="tv-btn w-full" onClick={() => { if (t.notYet()) return; t.claimOffer(booking.id); t.toast(e.price ? `Place claimed. ${priceLabel(e)} paid in test mode.` : "Place claimed. You're in."); }}>Claim the place{e.price ? `, ${priceLabel(e)}` : ""}</button>
       </>
     ) : <><p className="font-bold">You're number {booking.waitlistPosition} on the waitlist</p><p className="tv-muted tv-small">We'll hold any place that opens for you for {live ? "10 minutes" : "2 hours"}.</p></>;
   } else if (booking?.status === "applied") {
@@ -278,7 +278,7 @@ export function ExperiencePage() {
       </div>
 
       {!myBooking && e.accessType !== "walkin" && (
-        <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t border-tv-line bg-tv-page/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3 backdrop-blur lg:hidden">
+        <div className="tv-bookbar fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t border-tv-line bg-tv-page/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3 backdrop-blur lg:hidden">
           <span className="self-center font-bold">{priceLabel(e)}</span>
           <button type="button" className="tv-btn ml-auto" onClick={() => setBooking(true)}>{ctaLabel(e, full(e))}</button>
         </div>

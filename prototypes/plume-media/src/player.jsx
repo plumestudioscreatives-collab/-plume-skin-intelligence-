@@ -1,10 +1,9 @@
 // Video player. Catalog films in this prototype have no video file, so the player
 // says so instead of pretending to play. A file the viewer picks in Studio plays
 // locally from their own device.
+import { useState, useRef } from 'react';
 import { Art } from './art.jsx';
 import { Icon, IconButton, Notice } from './ui.jsx';
-
-const { useState, useRef } = React;
 
 export function Player({ title, art, duration, captions = [], transcript, src, upcoming, premieres }) {
   const [cc, setCc] = useState(false);

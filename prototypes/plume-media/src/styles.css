@@ -210,6 +210,7 @@ legend { padding: 0; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* ------------------------------------------------------------ buttons and controls */
+a.btn { text-decoration: none; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: var(--r-pill); font-weight: 650; font-size: .95rem; line-height: 1.1; border: 1px solid transparent; transition: background .2s var(--ease), border-color .2s, color .2s, transform .2s var(--ease); white-space: nowrap; }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn-sm { min-height: 36px; padding: 0 13px; font-size: .87rem; gap: 6px; }
@@ -572,6 +573,8 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); opacity: .85; }
 .receipt dt { color: var(--ink-3); }
 .receipt dd { font-weight: 650; display: inline-flex; gap: 8px; align-items: center; }
 @container app (max-width: 800px) { .checkout-grid { grid-template-columns: 1fr; } .order-summary { order: -1; } }
+/* Before launch (on the Plume site) the "opens" notice comes first on phones. */
+@container app (max-width: 800px) { .checkout-opens .order-summary { order: 0; } }
 
 /* ------------------------------------------------------------ classroom */
 .classroom { display: flex; flex-direction: column; min-height: calc(100vh - 66px); }

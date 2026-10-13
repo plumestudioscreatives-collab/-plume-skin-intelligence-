@@ -80,7 +80,7 @@ export function Modal({ open, onClose, title, children, wide, labelledBy }: { op
 export function Toasts() {
   const { toasts, dismissToast } = useTravel();
   return (
-    <div className="pointer-events-none fixed inset-x-4 bottom-[calc(20px+env(safe-area-inset-bottom,0px))] z-[70] flex flex-col items-center gap-2" aria-live="polite">
+    <div className="tv-toasts pointer-events-none fixed inset-x-4 bottom-[calc(20px+env(safe-area-inset-bottom,0px))] z-[70] flex flex-col items-center gap-2" aria-live="polite">
       {toasts.map((t) => (
         <div key={t.id} className="tv-toast max-w-[560px]" role="status">
           <span>{t.text}</span>

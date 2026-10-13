@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { TOPICS, EDU_TYPES, CREATOR_TYPES, LESSON_BODIES } from '../data.js';
 import { useApp, fmtPrice, fmtMinutes, fmtDate, isPublic, managedChannels, allLessons, courseProgress, uid, today } from '../store.js';
 import { Art } from '../art.jsx';
@@ -6,8 +7,6 @@ import {
   Icon, Button, Chip, CourseCard, EduLabel, Avatar, CredentialLine, FollowButton, SaveButton, Empty, Notice,
   Modal, Field, describedBy, Progress, Prose, Segmented,
 } from '../ui.jsx';
-
-const { useState, useEffect, useRef } = React;
 
 const LESSON_ICON = { video: 'video', text: 'text', resource: 'resource', quiz: 'quiz', assignment: 'assignment' };
 const LESSON_WORD = { video: 'Video', text: 'Written lesson', resource: 'Resource', quiz: 'Quiz', assignment: 'Assignment' };
@@ -117,7 +116,7 @@ function PreviewModal({ course, lesson, onClose }) {
 }
 
 export function CourseDetail() {
-  const { content, route, nav, user, state, dispatch, toast } = useApp();
+  const { content, route, nav, user, state, dispatch, toast, launch } = useApp();
   const c = content.courses.find((x) => x.id === route.params.id);
   const [open, setOpen] = useState({});
   const [preview, setPreview] = useState(null);
@@ -142,7 +141,7 @@ export function CourseDetail() {
   else if (c.restricted) cta = <><Button variant="primary" icon="lock" disabled>Eligibility check required</Button><p className="meta">Professional courses will ask for proof of licence before enrollment. That process isn’t part of this prototype.</p></>;
   else if (e) cta = <><Button variant="primary" iconRight="arrowRight" onClick={() => nav('classroom', { id: c.id, lesson: nextLesson })}>{p.done ? 'Resume learning' : 'Start learning'}</Button><p className="meta">Enrolled {fmtDate(e.at)} · {p.done} of {p.total} lessons done</p></>;
   else if (!c.price) cta = <><Button variant="primary" onClick={enrollFree}>Enroll for free</Button><p className="meta">Free. No payment details needed.</p></>;
-  else cta = <><Button variant="primary" onClick={() => nav('checkout', { id: c.id })}>Buy for {fmtPrice(c.price)}</Button><p className="meta">One-time price set by {ch.name}. Checkout is simulated.</p></>;
+  else cta = <><Button variant="primary" onClick={() => nav('checkout', { id: c.id })}>Buy for {fmtPrice(c.price)}</Button><p className="meta">One-time price set by {ch.name}. {launch ? `Checkout opens ${launch.opensOn}.` : 'Checkout is simulated.'}</p></>;
 
   return (
     <div className="page course-page">
@@ -244,7 +243,7 @@ const TEST_OK = '4242424242424242';
 const TEST_DECLINE = '4000000000000002';
 
 export function Checkout() {
-  const { content, route, nav, user, persona, dispatch, toast } = useApp();
+  const { content, route, nav, user, persona, dispatch, toast, launch } = useApp();
   const c = content.courses.find((x) => x.id === route.params.id);
   const [form, setForm] = useState({ email: persona.name.split(' ')[0].toLowerCase() + '@example.com', name: persona.name.replace(/,.*$/, ''), card: '', exp: '', cvc: '' });
   const [errors, setErrors] = useState({});
@@ -317,6 +316,45 @@ export function Checkout() {
     );
   }
 
+  const summary = (
+      <aside className="order-summary" aria-labelledby="sum-title">
+        <h2 id="sum-title" className="eyebrow">Order summary</h2>
+        <div className="sum-item">
+          <Art spec={c.art} ratio="1 / 1" className="sum-thumb" />
+          <div><strong>{c.title}</strong><span className="meta">by {ch.name}</span></div>
+        </div>
+        <dl>
+          <div><dt>Class price</dt><dd>{fmtPrice(c.price)}</dd></div>
+          <div><dt>Tax</dt><dd className="muted">Calculated in production</dd></div>
+          <div className="sum-total"><dt>Total today</dt><dd>{fmtPrice(c.price)} USD</dd></div>
+        </dl>
+        <p className="meta">Price set by {ch.name}. Plume’s fee and the seller’s payout aren’t decided yet and aren’t shown here.</p>
+      </aside>
+  );
+
+  // On the Plume site before launch: everything stays explorable, but checkout stops here,
+  // before any card details are asked for.
+  if (launch) {
+    return (
+      <div className="page checkout">
+        <nav className="crumbs" aria-label="Breadcrumb"><button type="button" onClick={() => nav('course', { id: c.id })}>{c.title}</button><Icon name="chevronRight" size={14} /><span>Checkout</span></nav>
+        <h1 className="display-l">Paid classes open {launch.opensOn}</h1>
+        <div className="checkout-grid checkout-opens">
+          <div className="checkout-form">
+            <Notice tone="info" icon="calendar" title={`You can buy this class when Plume opens on ${launch.opensOn}`}>
+              Until then, explore everything: read the curriculum, watch the free previews and follow {ch.name}. Nothing is charged, and no card details are asked for.
+            </Notice>
+            <div className="btn-row">
+              <a className="btn btn-primary" href={launch.waitlistHref}><span>Join the waitlist</span></a>
+              <Button variant="secondary" onClick={() => nav('course', { id: c.id })}>Back to the class</Button>
+            </div>
+          </div>
+          {summary}
+        </div>
+      </div>
+    );
+  }
+
   const ids = { email: 'co-email', name: 'co-name', card: 'co-card', exp: 'co-exp', cvc: 'co-cvc' };
   return (
     <div className="page checkout">
@@ -356,19 +394,7 @@ export function Checkout() {
             <Button variant="ghost" onClick={() => { toast('Checkout canceled. Nothing was charged.'); nav('course', { id: c.id }); }}>Cancel</Button>
           </div>
         </form>
-        <aside className="order-summary" aria-labelledby="sum-title">
-          <h2 id="sum-title" className="eyebrow">Order summary</h2>
-          <div className="sum-item">
-            <Art spec={c.art} ratio="1 / 1" className="sum-thumb" />
-            <div><strong>{c.title}</strong><span className="meta">by {ch.name}</span></div>
-          </div>
-          <dl>
-            <div><dt>Class price</dt><dd>{fmtPrice(c.price)}</dd></div>
-            <div><dt>Tax</dt><dd className="muted">Calculated in production</dd></div>
-            <div className="sum-total"><dt>Total today</dt><dd>{fmtPrice(c.price)} USD</dd></div>
-          </dl>
-          <p className="meta">Price set by {ch.name}. Plume’s fee and the seller’s payout aren’t decided yet and aren’t shown here.</p>
-        </aside>
+        {summary}
       </div>
     </div>
   );

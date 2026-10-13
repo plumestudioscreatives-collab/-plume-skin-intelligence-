@@ -1,5 +1,5 @@
-// Builds the single-file prototype: bundles src/ with esbuild and inlines CSS and JS
-// into dist/plume-media.html. React and ReactDOM load from cdnjs at runtime.
+// Builds the single-file prototype: bundles src/ (with React) using esbuild and inlines CSS
+// and JS into dist/plume-media.html.
 import { build } from 'esbuild';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
@@ -9,14 +9,15 @@ const result = await build({
   write: false,
   format: 'iife',
   target: 'es2019',
-  jsxFactory: 'React.createElement',
-  jsxFragment: 'React.Fragment',
+  jsx: 'automatic',
   loader: { '.js': 'jsx', '.webp': 'dataurl' },
+  define: { 'process.env.NODE_ENV': '"production"' },
+  minify: true,
   legalComments: 'none',
   charset: 'utf8',
 });
 
-let js = result.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
+const js = result.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
 const css = readFileSync('src/styles.css', 'utf8');
 const tpl = readFileSync('src/index.template.html', 'utf8');
 const html = tpl.replace('/*__CSS__*/', () => css).replace('/*__JS__*/', () => js);

@@ -71,11 +71,11 @@ export const uid = (p: string) => `${p}-${Date.now().toString(36)}${(seq++).toSt
 const code = () => "PT-" + Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
 const DEFAULT_ROOM_PREF: RoomPreference = { showInAttendeeList: false, wantsToMeet: false };
 
-function initial(): TravelState {
+function initial(role: Role = "host"): TravelState {
   const [wf, wt] = quickRange("week");
   return {
     v: 3,
-    role: "host", // this review opens on Host Studio, Partnership board
+    role, // the standalone review opens as the host on the partnership board
     discovery: {
       mode: "near",
       near: { place: findPlace("New York")!, from: wf, to: wt, quick: "week" },
@@ -113,23 +113,33 @@ function initial(): TravelState {
   };
 }
 
-function load(): TravelState {
+function load(role?: Role): TravelState {
   try {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      if (s && s.v === 3) return { ...initial(), ...s };
+      if (s && s.v === 3) return { ...initial(role), ...s };
     }
   } catch {
     /* storage unavailable: start fresh */
   }
-  return initial();
+  return initial(role);
 }
 
 type Toast = { id: string; text: string; action?: { label: string; run: () => void } };
 
-function useTravelStore() {
-  const [state, setState] = useState<TravelState>(load);
+/**
+ * On plumestudioscreatives.com before launch: everything stays interactive, but booking a place,
+ * joining an event waitlist and claiming an opened place stop with "opens {opensOn}" and a link
+ * to the site's waitlist. Not set in the standalone preview, where those flows run in full.
+ */
+export interface Launch { opensOn: string; waitlistHref: string }
+
+function useTravelStore(initialRole?: Role, lockRole?: Role, launch: Launch | null = null) {
+  const [state, setState] = useState<TravelState>(() => {
+    const s = load(lockRole ?? initialRole);
+    return lockRole ? { ...s, role: lockRole } : s;
+  });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -192,8 +202,9 @@ function useTravelStore() {
   // ------------------------------------------------------------ actions
   const actions = {
     toast, dismissToast,
-    reset: () => { try { window.localStorage.removeItem(KEY); } catch { /* ignore */ } apply(() => initial()); },
-    setRole: (role: Role) => apply((s) => ({ ...s, role })),
+    reset: () => { try { window.localStorage.removeItem(KEY); } catch { /* ignore */ } apply((s) => initial(s.role)); },
+    /** The preview's "View as" switch. Inside the app after launch, the role comes from auth and is locked. */
+    setRole: (role: Role) => { if (!lockRole) apply((s) => ({ ...s, role })); },
     setDiscovery: (patch: Partial<Discovery>) => apply((s) => ({ ...s, discovery: { ...s.discovery, ...patch } })),
     /** Update the place and dates for the current mode (Near me or I'm traveling). */
     setSide: (patch: Partial<Side>) => apply((s) => {
@@ -575,14 +586,21 @@ function useTravelStore() {
     introduce: (a: string, b: string, note: string) => apply((s) => ({ ...s, introductions: [{ id: uid("in"), a, b, note, at: NOW }, ...s.introductions] })),
   };
 
-  return { state, toasts, ...actions };
+  /** Before launch: say when booking opens instead of booking. Returns true when it stopped. */
+  const notYet = () => {
+    if (!launch) return false;
+    toast(`Booking opens ${launch.opensOn}. Nothing was booked.`, { label: "Join the waitlist", run: () => window.location.assign(launch.waitlistHref) });
+    return true;
+  };
+
+  return { state, toasts, launch, notYet, ...actions };
 }
 
 type Store = ReturnType<typeof useTravelStore>;
 const Ctx = createContext<Store | null>(null);
 
-export function TravelProvider({ children }: { children: ReactNode }) {
-  const store = useTravelStore();
+export function TravelProvider({ children, initialRole, lockRole, launch }: { children: ReactNode; initialRole?: Role; lockRole?: Role; launch?: Launch }) {
+  const store = useTravelStore(initialRole, lockRole, launch ?? null);
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
 }
 

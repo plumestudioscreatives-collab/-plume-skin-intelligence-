@@ -1,4 +1,5 @@
 // Studio editors: writing, masterclasses and video. Everything saves to local demo state.
+import { useState, useRef, useEffect } from 'react';
 import { TOPICS, FORMATS, CASE_TEMPLATES, EDU_TYPES, SAMPLE_LEARNERS, ACCOUNTS, ASSIGNMENTS } from '../data.js';
 import { useApp, uid, today, fmtDate, fmtPrice, allLessons, courseProgress, managedChannels } from '../store.js';
 import { Art } from '../art.jsx';
@@ -8,8 +9,6 @@ import {
   bodyToBlocks, blocksToBody,
 } from '../ui.jsx';
 import { LESSON_ICON, LESSON_WORD } from './learn.jsx';
-
-const { useState, useRef, useEffect } = React;
 
 export const COVER_OPTIONS = [
   { kind: 'portrait', skin: 'deep', hair: 'coils', hairColor: '#1A1311', bg: 'lilac', garment: '#45203F', acc: 'gold', blooms: ['coral'] },

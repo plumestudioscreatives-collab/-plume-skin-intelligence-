@@ -1,9 +1,8 @@
+import { useState } from 'react';
 import { TOPICS, CREATOR_TYPES, ACCOUNTS } from '../data.js';
 import { useApp, isPublic, managedChannels } from '../store.js';
 import { Art } from '../art.jsx';
 import { Icon, Button, Tabs, ArticleCard, CourseCard, VideoCard, Avatar, CredentialLine, FollowButton, TopicLinks, Empty, Label } from '../ui.jsx';
-
-const { useState } = React;
 
 export function Channel() {
   const { content, route, nav, state } = useApp();

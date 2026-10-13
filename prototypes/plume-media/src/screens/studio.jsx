@@ -1,11 +1,10 @@
 // Creator Studio: the private workspace for publishing and managing content.
+import { useState } from 'react';
 import { TOPICS, FORMATS, CREATOR_TYPES, ACCOUNTS, PALETTES } from '../data.js';
 import { useApp, managedChannels, fmtDate, fmtPrice, uid, today } from '../store.js';
 import { Art } from '../art.jsx';
 import { Icon, Button, Tabs, Avatar, Empty, Notice, StatusPill, Field, describedBy, TagInput, Label, CredentialLine, Modal } from '../ui.jsx';
 import { ArticleEditor, CourseBuilder, CourseManage, VideoPublisher } from './editors.jsx';
-
-const { useState } = React;
 
 function CreateChannel() {
   const { state, dispatch, toast, persona, nav } = useApp();

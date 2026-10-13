@@ -1,0 +1,12 @@
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -2,6 +2,9 @@
+ @source "../src";
+ @import "tw-animate-css";
+ @import "./plume/plume-tokens.css";
++@source not "./features/media";
++@import "./features/media/media.css";
++@import "./features/travel/travel.css";
+ 
+ @custom-variant dark (&:is(.dark *));
+ 

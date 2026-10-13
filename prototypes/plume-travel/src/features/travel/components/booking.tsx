@@ -84,11 +84,12 @@ function SaveDialog({ e, onClose }: { e: Experience; onClose: () => void }) {
 }
 
 // ---------------------------------------------------------------- booking
-type Step = "form" | "pay" | "processing" | "done";
+type Step = "form" | "pay" | "processing" | "done" | "opens";
 
 export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onClose: () => void; initialSlot?: string | null }) {
   const t = useTravel();
   const host = HOSTS[e.hostId];
+  const save = useSaveFlow();
   const [step, setStep] = useState<Step>("form");
   const [slotId, setSlotId] = useState<string | null>(initialSlot ?? null);
   const [plusOne, setPlusOne] = useState(false);
@@ -118,6 +119,7 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
   const submit = (ev: FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
+    if (t.launch) { setStep("opens"); return; }
     if (full) {
       const b = t.joinWaitlist(e.id, slotId, consent);
       setResult({ booking: b, trip: null }); setStep("done"); return;
@@ -134,7 +136,8 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
     timer.current = window.setTimeout(() => { setResult(t.book(e.id, { slotId, plusOne, consent })); setStep("done"); }, 1200);
   };
 
-  const title = step === "done" ? undefined : full ? "Join the waitlist" : step === "pay" || step === "processing" ? "Pay for your ticket" : ctaLabel(e, false);
+  const whatOpens = full ? "Joining the waitlist" : e.accessType === "paid" ? "Buying tickets" : e.accessType === "apply" ? "Applying" : e.accessType === "invite" ? "Asking for an invitation" : "Booking";
+  const title = step === "done" ? undefined : step === "opens" && t.launch ? `${whatOpens} opens ${t.launch.opensOn}` : full ? "Join the waitlist" : step === "pay" || step === "processing" ? "Pay for your ticket" : ctaLabel(e, false);
 
   return (
     <Modal open onClose={onClose} title={title} labelledBy={step === "done" ? "done-h" : undefined}>
@@ -178,6 +181,7 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
             </label>
           </div>
           <p className="tv-muted tv-small flex items-center gap-2"><Lock size={16} aria-hidden="true" />Booking never shares your plans. You choose whether to appear in the event room.</p>
+          {t.launch && <p className="tv-pill tv-pill-warn w-fit whitespace-normal">Booking opens {t.launch.opensOn}. Try every step; nothing is booked or charged.</p>}
           <div className="flex flex-wrap justify-end gap-2">
             <button type="button" className="tv-btn tv-btn-alt" onClick={onClose}>Cancel</button>
             <button type="submit" className="tv-btn">{full ? "Join the waitlist" : e.accessType === "paid" ? `Continue to payment` : ctaLabel(e, false)}</button>
@@ -203,6 +207,19 @@ export function BookingDialog({ e, onClose, initialSlot }: { e: Experience; onCl
             <button type="submit" className="tv-btn" disabled={step === "processing"}>{step === "processing" ? "Processing…" : `Pay ${money(amount, e.currency)}`}</button>
           </div>
         </form>
+      )}
+
+      {step === "opens" && t.launch && (
+        <div className="grid gap-4">
+          <p>Plume opens on {t.launch.opensOn}, and so does {whatOpens.toLowerCase()}. Nothing was booked or charged.</p>
+          <p className="tv-muted">Until then, everything else is yours to try: save {e.title} to an itinerary, follow {host.name}, or look around the event room.</p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <button type="button" className="tv-btn tv-btn-alt" onClick={() => save.choose(e)}>Save to an itinerary</button>
+            <a className="tv-btn tv-btn-alt" href={t.launch.waitlistHref}>Join the waitlist</a>
+            <button type="button" className="tv-btn" onClick={onClose}>Done</button>
+          </div>
+          {save.dialog}
+        </div>
       )}
 
       {step === "done" && result && <BookingDone e={e} b={result.booking} trip={result.trip} onClose={onClose} />}

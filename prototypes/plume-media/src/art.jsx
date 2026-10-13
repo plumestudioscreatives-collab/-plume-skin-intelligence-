@@ -1,11 +1,10 @@
 // Illustrated placeholder art. These are drawn in code so the prototype can show
 // a range of skin tones and hair textures without using unlicensed photography.
 // Replace with commissioned or licensed imagery before launch.
+import { useRef } from 'react';
 import { PALETTES } from './data.js';
 import logoUrl from '../assets/plume-logo-320.webp';
 import { localMedia } from './media.js';
-
-const { useRef } = React;
 
 export const LOGO_URL = logoUrl;
 
