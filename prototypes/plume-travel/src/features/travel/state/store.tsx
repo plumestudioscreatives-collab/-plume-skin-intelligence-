@@ -589,7 +589,9 @@ function useTravelStore(initialRole?: Role, lockRole?: Role, launch: Launch | nu
   /** Before launch: say when booking opens instead of booking. Returns true when it stopped. */
   const notYet = () => {
     if (!launch) return false;
-    toast(`Booking opens ${launch.opensOn}. Nothing was booked.`, { label: "Join the waitlist", run: () => window.location.assign(launch.waitlistHref) });
+    // An ordinary link click, so the site's router (or a full page load) takes it from here.
+    const toWaitlist = () => { const a = document.createElement("a"); a.href = launch.waitlistHref; document.body.append(a); a.click(); a.remove(); };
+    toast(`Booking opens ${launch.opensOn}. Nothing was booked.`, { label: "Join the waitlist", run: toWaitlist });
     return true;
   };
 

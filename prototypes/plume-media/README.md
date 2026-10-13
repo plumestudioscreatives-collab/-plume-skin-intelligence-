@@ -4,7 +4,8 @@ Interactive design prototype for **Plume Media**, the Learn · Read · Watch par
 It is for design review in Claude. It is **not** production code and is not connected to the
 Plume API, Supabase, Stripe, or the Lovable app.
 
-- Self-contained: nothing outside `prototypes/plume-media/` imports it, and it changes no existing file.
+- The same source runs on plumestudioscreatives.com: `prototypes/plume-lovable` copies it into the site
+  with a scoped stylesheet (`scripts/scope-css.mjs`). Nothing else imports it.
 - Sample data only. Every creator, credential, price, enrollment and film is fictional.
 - Artwork is illustrated placeholder art drawn in code (`src/art.jsx`). The Plume logo comes from the
   Plume Design System and is used as supplied.
@@ -14,7 +15,7 @@ Plume API, Supabase, Stripe, or the Lovable app.
 ```bash
 cd prototypes/plume-media
 npm install
-npm run build        # writes dist/plume-media.html (single file; React 18.3.1 loads from cdnjs)
+npm run build        # writes dist/plume-media.html (single file, React bundled in)
 ```
 
 Open `dist/plume-media.html` in a browser, or publish it as a Claude artifact.
@@ -27,6 +28,7 @@ Open `dist/plume-media.html` in a browser, or publish it as a Claude artifact.
 | `src/store.js` | Local demo state (reducer), persistence to `localStorage`, selectors |
 | `src/ui.jsx` | Shared components: icons, buttons, chips, tabs, labels, cards, fields, modal |
 | `src/art.jsx` | Placeholder illustration system (skin tones, hair textures, still life) |
+| `src/App.jsx` | The app root (`PlumeMediaApp`): routing, shared context, the optional `launch` stop for paid checkout. `src/main.jsx` mounts it for the standalone page |
 | `src/shell.jsx` | Preview bar (demo switcher, journeys, frame toggle, reset), header, tabs, footer |
 | `src/player.jsx` | Video player with honest no-file state, captions preview, transcript |
 | `src/screens/*.jsx` | Home, Search, Channel, Read, Article, Learn, Course, Checkout, Classroom, Watch, Video, Series, My Collection, Studio and its editors |

@@ -25,44 +25,27 @@ The preview opens as the host (Lumen Aesthetics) on Host Studio → Partnership 
 restores the sample data. The preview clock is fixed at Monday, Oct 12, 2026, 3:00 pm in New York,
 while two Brooklyn events are happening.
 
-## Where each piece goes in the Plume app
+## On plumestudioscreatives.com
 
-Everything lives under `src/features/travel/` and moves across as-is. Routes become TanStack
-Start file routes (each with `ssr: false` and the same auth `beforeLoad` the app already uses).
+`prototypes/plume-lovable` holds the package for the site: this module copied as-is into
+`src/features/travel`, the site adapter (`app/TravelLayout.tsx`), and the TanStack Start file routes
+for every page under `/travel`, all inside the site's `AppShell` sidebar. Its README lists the files,
+the three site files that change, and how to get them into Lovable.
 
-| Preview route | File route in the app | Screen |
-| --- | --- | --- |
-| `/travel` | `travel.index.tsx` | Discover: Near Me / I'm Traveling, worldwide search, calendar, By day / All together, Atmosphere, Plan My Trip |
-| `/travel/e/$experienceId` | `travel.e.$experienceId.tsx` | Listing (How to Get In, Happening Now, Tried It, What it feels like, Room), or the recap once ended |
-| `/travel/e/$experienceId/room` | `travel.e.$experienceId.room.tsx` | An event Room |
-| `/travel/missed` | `travel.missed.tsx` | You Missed It with Bring It Back |
-| `/travel/itinerary` | `travel.itinerary.tsx` | My itinerary: named itineraries, by day, map, sharing |
-| `/travel/i/$token` | `travel.i.$token.tsx` | View-only shared itinerary |
-| `/travel/passport` | `travel.passport.tsx` | Passport stamps |
-| `/travel/rooms` | `travel.rooms.tsx` | Rooms hub (joined Rooms, unread state) |
-| `/travel/following` | `travel.following.tsx` | Alerts, followed places and hosts, trip alerts |
-| `/travel/board` | `travel._host.board.index.tsx` | Host Studio: the partnership board |
-| `/travel/board/o/$postId` | `travel._host.board.o.$postId.tsx` | An opportunity, with the proposal form |
-| `/travel/board/brief` | `travel._host.board.brief.tsx` | Post, edit or reopen an opportunity |
-| `/travel/board/opportunities` | `travel._host.board.opportunities.tsx` | My opportunities |
-| `/travel/board/applications` | `travel._host.board.applications.tsx` | Applications, Received / Sent, with history |
-| `/travel/board/workspaces` | `travel._host.board.workspaces.tsx` | Shared workspaces |
-| `/travel/board/c/$collabId` | `travel._host.board.c.$collabId.tsx` | One workspace: agreement, event draft review, approvals, publish |
-| `/travel/studio/events` | `travel._host.studio.events.tsx` | My events (drafts, upcoming, completed, cancelled; list or calendar) |
-| `/travel/studio/create` | `travel._host.studio.create.tsx` | Create or edit an experience (Turnout Prediction, Treatment Safety) |
-| `/travel/studio/results` | `travel._host.studio.results.tsx` | Results: Event Outcome Intelligence |
-| `/travel/studio/checkin` | `travel._host.studio.checkin.tsx` | Check-in with the live wait control |
-| `/travel/admin` | `travel.admin.tsx` | Admin: licenses, treatment rules, brokering |
+| Preview route | Screen |
+| --- | --- |
+| `/travel` | Discover: Near Me / I'm Traveling, worldwide search, calendar, By day / All together, Atmosphere, Plan My Trip |
+| `/travel/e/$experienceId` | Listing (How to Get In, Happening Now, Tried It, What it feels like, Room), or the recap once ended |
+| `/travel/e/$experienceId/room` | An event Room |
+| `/travel/missed` | You Missed It with Bring It Back |
+| `/travel/itinerary`, `/travel/i/$token` | My itinerary; a view-only shared itinerary |
+| `/travel/passport`, `/travel/rooms`, `/travel/following` | Passport stamps; Rooms; alerts and follows |
+| `/travel/board/...` | Host Studio: the partnership board, an opportunity, post a brief, My opportunities, Applications, Shared workspaces, one workspace |
+| `/travel/studio/...` | Host Studio: My events, create or edit, Results, Check-in |
+| `/travel/admin` | Admin: licenses, treatment rules, brokering |
 
-`_host` is a pathless layout route holding the Host Studio sidebar.
-
-Styles are scoped: tokens are prefixed `--tv-*` and utilities `bg-tv-*`, `text-tv-*`, so they
-can't collide with the app's shadcn tokens. The host area adds a `.tv-host` scope with the
-reference's ivory, plum and lavender, so consumer pages keep their own palette. The app logo
-import becomes `@/assets/plume-logo.png`.
-
-Changes outside Plume Travel that will need your OK at integration: a "Travel" entry in the app
-navigation (`AppShell` / `PlumeAppSidebar`), and the regenerated `routeTree.gen.ts`.
+Styles are scoped: tokens are prefixed `--tv-*` and utilities `bg-tv-*`, `text-tv-*`
+(`src/features/travel/travel.css`), so they can't collide with the site's tokens.
 
 ## Files
 

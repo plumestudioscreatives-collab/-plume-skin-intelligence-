@@ -1,0 +1,6 @@
+node_modules/
+showcase/site/
+showcase/routes/
+showcase/routeTree.gen.ts
+showcase/dist/
+changes/src/styles.css

@@ -1,0 +1,10 @@
+/* The preview's stylesheet: the same pieces the site's src/styles.css loads for these pages. */
+@import "tailwindcss" source(none);
+@source "./site";
+@source "./routes";
+@source "../files/src/features/travel";
+@import "./site/plume/plume-tokens.css";
+@import "../files/src/features/media/media.css";
+@import "../files/src/features/travel/travel.css";
+
+body { margin: 0; background: var(--plume-page); }

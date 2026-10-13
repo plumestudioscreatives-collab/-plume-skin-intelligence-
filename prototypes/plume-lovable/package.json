@@ -1,0 +1,24 @@
+{
+  "name": "plume-lovable-showcase",
+  "private": true,
+  "type": "module",
+  "description": "Builds a clickable preview of the package inside the site's sidebar. Not part of what goes to Lovable.",
+  "scripts": {
+    "assemble": "node assemble.mjs",
+    "showcase": "node showcase/prepare.mjs && vite build --config showcase/vite.config.ts",
+    "showcase:dev": "node showcase/prepare.mjs && vite --config showcase/vite.config.ts --port 5194"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.0",
+    "@tanstack/react-router": "1.170.41",
+    "@tanstack/router-plugin": "1.168.42",
+    "@vitejs/plugin-react": "5.2.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.575.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "tailwind-merge": "3.6.0",
+    "tailwindcss": "4.3.0",
+    "vite": "7.3.3"
+  }
+}
